@@ -1,0 +1,125 @@
+{
+  "contractName": "Pair",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "mint",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.15+commit.e14f2714\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"mint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/Pair.sol\":\"Pair\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/Pair.sol\":{\"keccak256\":\"0x0028260439648d4ffa92b4c98d9b02e7d1498e514defc7660fba84eca8a71bbf\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://44a5c43484f9ab716c947b6886b79771b96f0105e00e34f3e9d696bb5bd64a1d\",\"dweb:/ipfs/QmePuTLkX219rMNXUhgFVRwqkixqfqZ23YsgDKJEvVd5c9\"]}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b50606d80601d6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c80631249c58b14602d575b600080fd5b60336035565b005b56fea2646970667358221220d052aa5cc720db761c82e0b0d3fd7ae97ca08ac28fbfac1ce73cc3ad3a0bf1ba64736f6c634300080f0033",
+  "deployedBytecode": "0x6080604052348015600f57600080fd5b506004361060285760003560e01c80631249c58b14602d575b600080fd5b60336035565b005b56fea2646970667358221220d052aa5cc720db761c82e0b0d3fd7ae97ca08ac28fbfac1ce73cc3ad3a0bf1ba64736f6c634300080f0033",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "58:45:0:-:0;;;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "58:45:0:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;76:25;;;:::i;:::-;;;:::o",
+  "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.15;\n\ncontract Pair {\n  function mint() public {}\n}\n",
+  "sourcePath": "/Users/lambros/Downloads/my-crypto-exchange/contracts/Pair.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/Pair.sol",
+    "exportedSymbols": {
+      "Pair": [
+        6
+      ]
+    },
+    "id": 7,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".15"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "32:24:0"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "Pair",
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "fullyImplemented": true,
+        "id": 6,
+        "linearizedBaseContracts": [
+          6
+        ],
+        "name": "Pair",
+        "nameLocation": "67:4:0",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": {
+              "id": 4,
+              "nodeType": "Block",
+              "src": "99:2:0",
+              "statements": []
+            },
+            "functionSelector": "1249c58b",
+            "id": 5,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "mint",
+            "nameLocation": "85:4:0",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 2,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "89:2:0"
+            },
+            "returnParameters": {
+              "id": 3,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "99:0:0"
+            },
+            "scope": 6,
+            "src": "76:25:0",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "public"
+          }
+        ],
+        "scope": 7,
+        "src": "58:45:0",
+        "usedErrors": []
+      }
+    ],
+    "src": "32:72:0"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.15+commit.e14f2714.Emscripten.clang"
+  },
+  "networks": {
+    "5777": {
+      "events": {},
+      "links": {},
+      "address": "0xEAC06964083002536cddb8015222C4A44da28511",
+      "transactionHash": "0xe92312b9ccbbe33084116348a002e985b809f163b31def8a3893001736738db0"
+    }
+  },
+  "schemaVersion": "3.4.8",
+  "updatedAt": "2022-08-26T18:23:55.705Z",
+  "networkType": "ethereum",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  }
+}

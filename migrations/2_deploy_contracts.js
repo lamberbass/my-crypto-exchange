@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const Migrations = artifacts.require('Migrations');
+const Pair = artifacts.require('Pair');
 const migration = function (deployer) {
-    deployer.deploy(Migrations);
+    deployer.deploy(Pair);
 };
 module.exports = migration;
