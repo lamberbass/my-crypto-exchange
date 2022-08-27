@@ -21,15 +21,31 @@ export interface Approval {
   };
 }
 
-export interface Mint {
-  name: "Mint";
+export interface Burn {
+  name: "Burn";
   args: {
-    to: string;
+    sender: string;
     amount0: BN;
     amount1: BN;
+    burned: BN;
     0: string;
     1: BN;
     2: BN;
+    3: BN;
+  };
+}
+
+export interface Mint {
+  name: "Mint";
+  args: {
+    sender: string;
+    amount0: BN;
+    amount1: BN;
+    minted: BN;
+    0: string;
+    1: BN;
+    2: BN;
+    3: BN;
   };
 }
 
@@ -45,7 +61,7 @@ export interface Transfer {
   };
 }
 
-type AllEvents = Approval | Mint | Transfer;
+type AllEvents = Approval | Burn | Mint | Transfer;
 
 export interface PairInstance extends Truffle.ContractInstance {
   /**
@@ -265,6 +281,24 @@ export interface PairInstance extends Truffle.ContractInstance {
     ): Promise<number>;
   };
 
+  burn: {
+    (to: string, txDetails?: Truffle.TransactionDetails): Promise<
+      Truffle.TransactionResponse<AllEvents>
+    >;
+    call(
+      to: string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<{ 0: BN; 1: BN }>;
+    sendTransaction(
+      to: string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      to: string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
   methods: {
     /**
      * See {IERC20-allowance}.
@@ -473,6 +507,24 @@ export interface PairInstance extends Truffle.ContractInstance {
         Truffle.TransactionResponse<AllEvents>
       >;
       call(to: string, txDetails?: Truffle.TransactionDetails): Promise<BN>;
+      sendTransaction(
+        to: string,
+        txDetails?: Truffle.TransactionDetails
+      ): Promise<string>;
+      estimateGas(
+        to: string,
+        txDetails?: Truffle.TransactionDetails
+      ): Promise<number>;
+    };
+
+    burn: {
+      (to: string, txDetails?: Truffle.TransactionDetails): Promise<
+        Truffle.TransactionResponse<AllEvents>
+      >;
+      call(
+        to: string,
+        txDetails?: Truffle.TransactionDetails
+      ): Promise<{ 0: BN; 1: BN }>;
       sendTransaction(
         to: string,
         txDetails?: Truffle.TransactionDetails

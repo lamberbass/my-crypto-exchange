@@ -13,8 +13,9 @@ contract Pair is ERC20 {
   uint256 public reserve0;
   uint256 public reserve1;
 
-  event Mint(address indexed to, uint256 amount0, uint256 amount1);
-  
+  event Mint(address indexed sender, uint256 amount0, uint256 amount1, uint256 minted);
+  event Burn(address indexed sender, uint256 amount0, uint256 amount1, uint256 burned);
+
   constructor() ERC20("Liquidity Provider Token", "LPT") {}
 
   function initialize(address _token0, address _token1) public {
@@ -52,6 +53,30 @@ contract Pair is ERC20 {
     reserve0 = balance0;
     reserve1 = balance1;
 
-    emit Mint(to, amount0, amount1);
+    emit Mint(to, amount0, amount1, mintedLP);
+  }
+
+  function burn(address to) public returns (uint256 amount0, uint256 amount1) {
+    uint256 lpTokens = balanceOf(to);
+
+    amount0 = (lpTokens * reserve0) / totalSupply();
+    amount1 = (lpTokens * reserve1) / totalSupply();
+
+    if (amount0 == 0 || amount1 == 0) {
+      revert('Insufficient liquidity tokens burned!');
+    }
+
+    _burn(to, lpTokens);
+
+    ERC20(token0).transfer(to, amount0);
+    ERC20(token1).transfer(to, amount1);
+
+    uint256 balance0 = ERC20(token0).balanceOf(address(this));
+    uint256 balance1 = ERC20(token1).balanceOf(address(this));
+
+    reserve0 = balance0;
+    reserve1 = balance1;
+
+    emit Burn(to, amount0, amount1, lpTokens);
   }
 }
