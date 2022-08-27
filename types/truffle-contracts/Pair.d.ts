@@ -28,10 +28,12 @@ export interface Burn {
     amount0: BN;
     amount1: BN;
     burned: BN;
+    to: string;
     0: string;
     1: BN;
     2: BN;
     3: BN;
+    4: string;
   };
 }
 
@@ -41,11 +43,13 @@ export interface Mint {
     sender: string;
     amount0: BN;
     amount1: BN;
-    minted: BN;
+    minte: BN;
+    to: string;
     0: string;
     1: BN;
     2: BN;
     3: BN;
+    4: string;
   };
 }
 
@@ -55,9 +59,11 @@ export interface Swap {
     sender: string;
     amount0: BN;
     amount1: BN;
+    to: string;
     0: string;
     1: BN;
     2: BN;
+    3: string;
   };
 }
 
@@ -294,19 +300,24 @@ export interface PairInstance extends Truffle.ContractInstance {
   };
 
   burn: {
-    (to: string, txDetails?: Truffle.TransactionDetails): Promise<
-      Truffle.TransactionResponse<AllEvents>
-    >;
+    (
+      to: string,
+      lpTokens: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse<AllEvents>>;
     call(
       to: string,
+      lpTokens: number | BN | string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<{ 0: BN; 1: BN }>;
     sendTransaction(
       to: string,
+      lpTokens: number | BN | string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<string>;
     estimateGas(
       to: string,
+      lpTokens: number | BN | string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<number>;
   };
@@ -557,19 +568,24 @@ export interface PairInstance extends Truffle.ContractInstance {
     };
 
     burn: {
-      (to: string, txDetails?: Truffle.TransactionDetails): Promise<
-        Truffle.TransactionResponse<AllEvents>
-      >;
+      (
+        to: string,
+        lpTokens: number | BN | string,
+        txDetails?: Truffle.TransactionDetails
+      ): Promise<Truffle.TransactionResponse<AllEvents>>;
       call(
         to: string,
+        lpTokens: number | BN | string,
         txDetails?: Truffle.TransactionDetails
       ): Promise<{ 0: BN; 1: BN }>;
       sendTransaction(
         to: string,
+        lpTokens: number | BN | string,
         txDetails?: Truffle.TransactionDetails
       ): Promise<string>;
       estimateGas(
         to: string,
+        lpTokens: number | BN | string,
         txDetails?: Truffle.TransactionDetails
       ): Promise<number>;
     };

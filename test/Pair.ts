@@ -4,292 +4,336 @@ const Pair = artifacts.require("Pair");
 const ERC20Mock = artifacts.require("ERC20Mock");
 const { expectRevert } = require('@openzeppelin/test-helpers');
 
-const ethString = (amount: number) => web3.utils.toWei(amount.toString(), 'ether');
-const weiString = (amount: number) => web3.utils.toWei(amount.toString(), 'wei');
-const ethBN = (amount: number) => web3.utils.toBN(ethString(amount));
-const weiBN = (amount: number) => web3.utils.toBN(weiString(amount));
+const eth = (amount: number) => web3.utils.toBN(web3.utils.toWei(amount.toString(), 'ether'));
+const wei = (amount: number) => web3.utils.toBN(web3.utils.toWei(amount.toString(), 'wei'));
+
+const assertEqual = async (actual: Promise<BN>, expected: BN) => assert.equal((await actual).toString(), expected.toString());
 
 contract('Pair', (accounts: string[]) => {
-  describe('Deployment', async () => {
+  let pairInstance: PairInstance;
+  let token0: ERC20MockInstance;
+  let token1: ERC20MockInstance;
+
+  beforeEach(async () => {
+    token0 = await ERC20Mock.new("Token 0", "T0");
+    token1 = await ERC20Mock.new("Token 1", "T1");
+
+    pairInstance = await Pair.new();
+    await pairInstance.initialize(token0.address, token1.address);
+
+    await token0.mint(eth(10), accounts[0]);
+    await token1.mint(eth(10), accounts[0]);
+
+    await token0.mint(eth(10), accounts[1]);
+    await token1.mint(eth(10), accounts[1]);
+  });
+
+  async function assertLpBalanceAndTotalSupply(account: string, expected: { balance: BN, totalSupply: BN }) {
+    await assertEqual(pairInstance.balanceOf(account), expected.balance);
+    await assertEqual(pairInstance.totalSupply(), expected.totalSupply);
+  }
+
+  async function assertReserves(expected: { reserve0: BN, reserve1: BN }) {
+    await assertEqual(pairInstance.reserve0(), expected.reserve0);
+    await assertEqual(pairInstance.reserve1(), expected.reserve1);
+  }
+
+  const assertTokenBalances = async (account: string, expected: { balance0: BN, balance1: BN }) => {
+    await assertEqual(token0.balanceOf(account), expected.balance0);
+    await assertEqual(token1.balanceOf(account), expected.balance1);
+  }
+
+  describe('Deploy', async () => {
     it('should be deployed', async () => {
       const pairInstance: PairInstance = await Pair.deployed();
       assert.isNotNull(pairInstance);
     });
   });
 
-  describe('Minting', async () => {
-    let pairInstance: PairInstance;
-    let token0: ERC20MockInstance;
-    let token1: ERC20MockInstance;
+  describe('Mint', async () => {
+    it('should mint when there\'s no liquidity', async () => {
+      await token0.transfer(pairInstance.address, eth(1));
+      await token1.transfer(pairInstance.address, eth(1));
 
-    beforeEach(async () => {
-      token0 = await ERC20Mock.new("Token 0", "T0");
-      token1 = await ERC20Mock.new("Token 1", "T1");
-      
-      pairInstance = await Pair.new();
-      await pairInstance.initialize(token0.address, token1.address);
+      await pairInstance.mint(accounts[0]);
 
-      await token0.mint(ethBN(10), accounts[0]);
-      await token1.mint(ethBN(10), accounts[0]);
+      await assertLpBalanceAndTotalSupply(accounts[0], {
+        balance: eth(1).sub(wei(1000)),
+        totalSupply: eth(1)
+      });
+
+      await assertReserves({
+        reserve0: eth(1),
+        reserve1: eth(1)
+      });
     });
 
-    it('should mint when there\'s no liquidity', async () => {    
-      await token0.transfer(pairInstance.address, ethBN(1));
-      await token1.transfer(pairInstance.address, ethBN(1));
+    it('should mint when there\'s liquidity', async () => {
+      await token0.transfer(pairInstance.address, eth(1));
+      await token1.transfer(pairInstance.address, eth(1));
 
       await pairInstance.mint(accounts[0]);
 
-      assert.equal((await pairInstance.balanceOf(accounts[0])).toString(), (ethBN(1).sub(weiBN(1000))).toString());
-      assert.equal((await pairInstance.reserve0()).toString(), ethString(1));
-      assert.equal((await pairInstance.reserve1()).toString(), ethString(1));
-      assert.equal((await pairInstance.totalSupply()).toString(), ethString(1));
+      await token0.transfer(pairInstance.address, eth(2));
+      await token1.transfer(pairInstance.address, eth(2));
+
+      await pairInstance.mint(accounts[0]);
+
+      await assertLpBalanceAndTotalSupply(accounts[0], {
+        balance: eth(3).sub(wei(1000)),
+        totalSupply: eth(3)
+      });
+
+      await assertReserves({
+        reserve0: eth(3),
+        reserve1: eth(3)
+      });
     });
 
-    it('should mint when there\'s liquidity', async () => {    
-      await token0.transfer(pairInstance.address, ethBN(1));
-      await token1.transfer(pairInstance.address, ethBN(1));
+    it('should mint with unbalanced token amounts', async () => {
+      await token0.transfer(pairInstance.address, eth(1));
+      await token1.transfer(pairInstance.address, eth(1));
 
       await pairInstance.mint(accounts[0]);
 
-      await token0.transfer(pairInstance.address, ethBN(2));
-      await token1.transfer(pairInstance.address, ethBN(2));
+      await token0.transfer(pairInstance.address, eth(2));
+      await token1.transfer(pairInstance.address, eth(1));
 
       await pairInstance.mint(accounts[0]);
 
-      assert.equal((await pairInstance.balanceOf(accounts[0])).toString(), (ethBN(3).sub(weiBN(1000))).toString());
-      assert.equal((await pairInstance.reserve0()).toString(), ethString(3));
-      assert.equal((await pairInstance.reserve1()).toString(), ethString(3));
-      assert.equal((await pairInstance.totalSupply()).toString(), ethString(3));
+      await assertLpBalanceAndTotalSupply(accounts[0], {
+        balance: eth(2).sub(wei(1000)),
+        totalSupply: eth(2)
+      });
+
+      await assertReserves({
+        reserve0: eth(3),
+        reserve1: eth(2)
+      });
     });
 
-    it('should mint with unbalanced token amounts', async () => {    
-      await token0.transfer(pairInstance.address, ethBN(1));
-      await token1.transfer(pairInstance.address, ethBN(1));
-
-      await pairInstance.mint(accounts[0]);
-
-      await token0.transfer(pairInstance.address, ethBN(2));
-      await token1.transfer(pairInstance.address, ethBN(1));
-
-      await pairInstance.mint(accounts[0]);
-
-      assert.equal((await pairInstance.balanceOf(accounts[0])).toString(), (ethBN(2).sub(weiBN(1000))).toString());
-      assert.equal((await pairInstance.reserve0()).toString(), ethString(3));
-      assert.equal((await pairInstance.reserve1()).toString(), ethString(2));
-      assert.equal((await pairInstance.totalSupply()).toString(), ethString(2));
-    });
-
-    it('should fail when token amounts are zero', async () => {    
+    it('should fail when token amounts are zero', async () => {
       await expectRevert.unspecified(pairInstance.mint(accounts[0]));
     });
 
     it('should fail when minting zero LP tokens', async () => {
-      await token0.transfer(pairInstance.address, weiBN(1000));
-      await token1.transfer(pairInstance.address, weiBN(1000));
+      await token0.transfer(pairInstance.address, wei(1000));
+      await token1.transfer(pairInstance.address, wei(1000));
 
       await expectRevert(pairInstance.mint(accounts[0]), 'Insufficient liquidity tokens minted!');
     });
   });
 
-  describe('Burning', async () => {
-    let pairInstance: PairInstance;
-    let token0: ERC20MockInstance;
-    let token1: ERC20MockInstance;
-
-    beforeEach(async () => {
-      token0 = await ERC20Mock.new("Token 0", "T0");
-      token1 = await ERC20Mock.new("Token 1", "T1");
-      
-      pairInstance = await Pair.new();
-      await pairInstance.initialize(token0.address, token1.address);
-
-      await token0.mint(ethBN(10), accounts[0]);
-      await token1.mint(ethBN(10), accounts[0]);
-
-      await token0.mint(ethBN(10), accounts[1]);
-      await token1.mint(ethBN(10), accounts[1]);
-    });
-
-    it('should burn with balanced token amounts', async () => {    
-      await token0.transfer(pairInstance.address, ethBN(1));
-      await token1.transfer(pairInstance.address, ethBN(1));
+  describe('Burn', async () => {
+    it('should burn with balanced token amounts', async () => {
+      await token0.transfer(pairInstance.address, eth(1));
+      await token1.transfer(pairInstance.address, eth(1));
 
       await pairInstance.mint(accounts[0]);
 
-      await pairInstance.burn(accounts[0]);
+      await pairInstance.burn(accounts[0], await pairInstance.balanceOf(accounts[0]));
 
-      assert.equal((await pairInstance.balanceOf(accounts[0])).toString(), ethString(0));
-      assert.equal((await pairInstance.reserve0()).toString(), weiString(1000));
-      assert.equal((await pairInstance.reserve1()).toString(), weiString(1000));
-      assert.equal((await pairInstance.totalSupply()).toString(), weiString(1000));
+      await assertLpBalanceAndTotalSupply(accounts[0], {
+        balance: eth(0),
+        totalSupply: wei(1000)
+      });
 
-      assert.equal((await token0.balanceOf(accounts[0])).toString(), (ethBN(10).sub(weiBN(1000))).toString());
-      assert.equal((await token1.balanceOf(accounts[0])).toString(), (ethBN(10).sub(weiBN(1000))).toString());
+      await assertReserves({
+        reserve0: wei(1000),
+        reserve1: wei(1000)
+      });
+
+      await assertTokenBalances(accounts[0], {
+        balance0: eth(10).sub(wei(1000)),
+        balance1: eth(10).sub(wei(1000))
+      });
     });
 
-    it('should burn with unbalanced token amounts', async () => {    
-      await token0.transfer(pairInstance.address, ethBN(1));
-      await token1.transfer(pairInstance.address, ethBN(1));
+    it('should burn with unbalanced token amounts', async () => {
+      await token0.transfer(pairInstance.address, eth(1));
+      await token1.transfer(pairInstance.address, eth(1));
 
       await pairInstance.mint(accounts[0]);
 
-      await token0.transfer(pairInstance.address, ethBN(2));
-      await token1.transfer(pairInstance.address, ethBN(1));
+      await token0.transfer(pairInstance.address, eth(2));
+      await token1.transfer(pairInstance.address, eth(1));
 
       await pairInstance.mint(accounts[0]);
 
-      await pairInstance.burn(accounts[0]);
+      await pairInstance.burn(accounts[0], await pairInstance.balanceOf(accounts[0]));
 
-      assert.equal((await pairInstance.balanceOf(accounts[0])).toString(), ethString(0));
-      assert.equal((await pairInstance.reserve0()).toString(), weiString(1500));
-      assert.equal((await pairInstance.reserve1()).toString(), weiString(1000));
-      assert.equal((await pairInstance.totalSupply()).toString(), weiString(1000));
+      await assertLpBalanceAndTotalSupply(accounts[0], {
+        balance: eth(0),
+        totalSupply: wei(1000)
+      });
 
-      assert.equal((await token0.balanceOf(accounts[0])).toString(), (ethBN(10).sub(weiBN(1500))).toString());
-      assert.equal((await token1.balanceOf(accounts[0])).toString(), (ethBN(10).sub(weiBN(1000))).toString());
+      await assertReserves({
+        reserve0: wei(1500),
+        reserve1: wei(1000)
+      });
+
+      await assertTokenBalances(accounts[0], {
+        balance0: eth(10).sub(wei(1500)),
+        balance1: eth(10).sub(wei(1000))
+      });
     });
 
-    it('should burn with different users', async () => {    
-      await token0.transfer(pairInstance.address, ethBN(1), { from : accounts[1] });
-      await token1.transfer(pairInstance.address, ethBN(1), { from : accounts[1] });
+    it('should burn with different users', async () => {
+      await token0.transfer(pairInstance.address, eth(1), { from: accounts[1] });
+      await token1.transfer(pairInstance.address, eth(1), { from: accounts[1] });
 
       await pairInstance.mint(accounts[1]);
 
-      await token0.transfer(pairInstance.address, ethBN(2));
-      await token1.transfer(pairInstance.address, ethBN(1));
+      await token0.transfer(pairInstance.address, eth(2));
+      await token1.transfer(pairInstance.address, eth(1));
 
       await pairInstance.mint(accounts[0]);
 
-      await pairInstance.burn(accounts[0]);
+      await pairInstance.burn(accounts[0], await pairInstance.balanceOf(accounts[0]));
 
-      assert.equal((await pairInstance.balanceOf(accounts[0])).toString(), ethString(0));
-      assert.equal((await pairInstance.reserve0()).toString(), ethString(1.5));
-      assert.equal((await pairInstance.reserve1()).toString(), ethString(1));
-      assert.equal((await pairInstance.totalSupply()).toString(), ethString(1));
+      await assertLpBalanceAndTotalSupply(accounts[0], {
+        balance: eth(0),
+        totalSupply: eth(1)
+      });
 
-      // accounts[0] lost 0.5 eth for providing unbalanced liquidity
-      assert.equal((await token0.balanceOf(accounts[0])).toString(), (ethBN(10).sub(ethBN(0.5))).toString());
-      assert.equal((await token1.balanceOf(accounts[0])).toString(), ethString(10));
+      await assertReserves({
+        reserve0: eth(1.5),
+        reserve1: eth(1)
+      });
 
-      await pairInstance.burn(accounts[1]);
+      // accounts[0] lost 0.5 eth of token0 for providing unbalanced liquidity
+      await assertTokenBalances(accounts[0], {
+        balance0: eth(10).sub(eth(0.5)),
+        balance1: eth(10)
+      });
 
-      assert.equal((await pairInstance.balanceOf(accounts[1])).toString(), ethString(0));
-      assert.equal((await pairInstance.reserve0()).toString(), weiString(1500));
-      assert.equal((await pairInstance.reserve1()).toString(), weiString(1000));
-      assert.equal((await pairInstance.totalSupply()).toString(), weiString(1000));
+      await pairInstance.burn(accounts[1], await pairInstance.balanceOf(accounts[1]));
 
-      // accounts[1] gained the 0.5 eth that accounts[0] lost
-      assert.equal((await token0.balanceOf(accounts[1])).toString(), (ethBN(10).add(ethBN(0.5)).sub(weiBN(1500))).toString());
-      assert.equal((await token1.balanceOf(accounts[1])).toString(), (ethBN(10).sub(weiBN(1000))).toString());
+      await assertLpBalanceAndTotalSupply(accounts[0], {
+        balance: eth(0),
+        totalSupply: wei(1000)
+      });
+
+      await assertReserves({
+        reserve0: wei(1500),
+        reserve1: wei(1000)
+      });
+
+      // accounts[1] gained the 0.5 eth of token0 that accounts[0] lost
+      await assertTokenBalances(accounts[1], {
+        balance0: eth(10).add(eth(0.5)).sub(wei(1500)),
+        balance1: eth(10).sub(wei(1000))
+      });
     });
 
-    it('should fail when total supply is zero', async () => {    
-      await expectRevert.unspecified(pairInstance.burn(accounts[0]));
+    it('should fail when total supply is zero', async () => {
+      await expectRevert.unspecified(pairInstance.burn(accounts[0], await pairInstance.balanceOf(accounts[0])));
     });
 
     it('should fail when LP tokens are zero', async () => {
-      await token0.transfer(pairInstance.address, ethBN(1));
-      await token1.transfer(pairInstance.address, ethBN(1));
+      await token0.transfer(pairInstance.address, eth(1));
+      await token1.transfer(pairInstance.address, eth(1));
 
       await pairInstance.mint(accounts[0]);
 
-      await expectRevert(pairInstance.burn(accounts[1]), 'Insufficient liquidity tokens burned!');
+      await expectRevert(pairInstance.burn(accounts[1], await pairInstance.balanceOf(accounts[1])), 'Insufficient liquidity tokens burned!');
     });
   });
 
-  describe('Swapping', async () => {
-    let pairInstance: PairInstance;
-    let token0: ERC20MockInstance;
-    let token1: ERC20MockInstance;
-
-    beforeEach(async () => {
-      token0 = await ERC20Mock.new("Token 0", "T0");
-      token1 = await ERC20Mock.new("Token 1", "T1");
-      
-      pairInstance = await Pair.new();
-      await pairInstance.initialize(token0.address, token1.address);
-
-      await token0.mint(ethBN(10), accounts[0]);
-      await token1.mint(ethBN(10), accounts[0]);
-    });
-
-    it('should swap token0 for token1', async () => {    
-      await token0.transfer(pairInstance.address, ethBN(1));
-      await token1.transfer(pairInstance.address, ethBN(2));
+  describe('Swap', async () => {
+    it('should swap token0 for token1', async () => {
+      await token0.transfer(pairInstance.address, eth(1));
+      await token1.transfer(pairInstance.address, eth(2));
       await pairInstance.mint(accounts[0]);
 
-      await token0.transfer(pairInstance.address, ethBN(0.1));
-      await pairInstance.swap(ethBN(0), ethBN(0.18), accounts[0]);
+      await token0.transfer(pairInstance.address, eth(0.1));
+      await pairInstance.swap(eth(0), eth(0.18), accounts[0]);
 
-      assert.equal((await token0.balanceOf(accounts[0])).toString(), (ethBN(10).sub(ethBN(1)).sub(ethBN(0.1))).toString());
-      assert.equal((await token1.balanceOf(accounts[0])).toString(), (ethBN(10).sub(ethBN(2)).add(ethBN(0.18))).toString());
+      await assertTokenBalances(accounts[0], {
+        balance0: eth(10).sub(eth(1)).sub(eth(0.1)),
+        balance1: eth(10).sub(eth(2)).add(eth(0.18))
+      });
 
-      assert.equal((await pairInstance.reserve0()).toString(), (ethBN(1).add(ethBN(0.1))).toString());
-      assert.equal((await pairInstance.reserve1()).toString(), (ethBN(2).sub(ethBN(0.18))).toString());
+      await assertReserves({
+        reserve0: eth(1).add(eth(0.1)),
+        reserve1: eth(2).sub(eth(0.18))
+      });
     });
 
-    it('should swap token1 for token0', async () => {    
-      await token0.transfer(pairInstance.address, ethBN(1));
-      await token1.transfer(pairInstance.address, ethBN(2));
+    it('should swap token1 for token0', async () => {
+      await token0.transfer(pairInstance.address, eth(1));
+      await token1.transfer(pairInstance.address, eth(2));
       await pairInstance.mint(accounts[0]);
 
-      await token1.transfer(pairInstance.address, ethBN(0.2));
-      await pairInstance.swap(ethBN(0.09), ethBN(0), accounts[0]);
+      await token1.transfer(pairInstance.address, eth(0.2));
+      await pairInstance.swap(eth(0.09), eth(0), accounts[0]);
 
-      assert.equal((await token0.balanceOf(accounts[0])).toString(), (ethBN(10).sub(ethBN(1)).add(ethBN(0.09))).toString());
-      assert.equal((await token1.balanceOf(accounts[0])).toString(), (ethBN(10).sub(ethBN(2)).sub(ethBN(0.2))).toString());
+      await assertTokenBalances(accounts[0], {
+        balance0: eth(10).sub(eth(1)).add(eth(0.09)),
+        balance1: eth(10).sub(eth(2)).sub(eth(0.2))
+      });
 
-      assert.equal((await pairInstance.reserve0()).toString(), (ethBN(1).sub(ethBN(0.09))).toString());
-      assert.equal((await pairInstance.reserve1()).toString(), (ethBN(2).add(ethBN(0.2))).toString());
+      await assertReserves({
+        reserve0: eth(1).sub(eth(0.09)),
+        reserve1: eth(2).add(eth(0.2))
+      });
     });
 
-    it('should swap tokens bidirectional', async () => {    
-      await token0.transfer(pairInstance.address, ethBN(1));
-      await token1.transfer(pairInstance.address, ethBN(2));
+    it('should swap tokens bidirectional', async () => {
+      await token0.transfer(pairInstance.address, eth(1));
+      await token1.transfer(pairInstance.address, eth(2));
       await pairInstance.mint(accounts[0]);
 
-      await token0.transfer(pairInstance.address, ethBN(0.1));
-      await token1.transfer(pairInstance.address, ethBN(0.2));
-      await pairInstance.swap(ethBN(0.09), ethBN(0.18), accounts[0]);
+      await token0.transfer(pairInstance.address, eth(0.1));
+      await token1.transfer(pairInstance.address, eth(0.2));
+      await pairInstance.swap(eth(0.09), eth(0.18), accounts[0]);
 
-      assert.equal((await token0.balanceOf(accounts[0])).toString(), (ethBN(10).sub(ethBN(1)).sub(ethBN(0.1)).add(ethBN(0.09))).toString());
-      assert.equal((await token1.balanceOf(accounts[0])).toString(), (ethBN(10).sub(ethBN(2)).sub(ethBN(0.2)).add(ethBN(0.18))).toString());
+      await assertTokenBalances(accounts[0], {
+        balance0: eth(10).sub(eth(1)).sub(eth(0.1)).add(eth(0.09)),
+        balance1: eth(10).sub(eth(2)).sub(eth(0.2)).add(eth(0.18))
+      });
 
-      assert.equal((await pairInstance.reserve0()).toString(), (ethBN(1).add(ethBN(0.1)).sub(ethBN(0.09))).toString());
-      assert.equal((await pairInstance.reserve1()).toString(), (ethBN(2).add(ethBN(0.2)).sub(ethBN(0.18))).toString());
+      await assertReserves({
+        reserve0: eth(1).add(eth(0.1)).sub(eth(0.09)),
+        reserve1: eth(2).add(eth(0.2)).sub(eth(0.18))
+      });
     });
 
-    it('should fail when K is decreased', async () => {    
-      await token0.transfer(pairInstance.address, ethBN(1));
-      await token1.transfer(pairInstance.address, ethBN(2));
+    it('should fail when K is decreased', async () => {
+      await token0.transfer(pairInstance.address, eth(1));
+      await token1.transfer(pairInstance.address, eth(2));
       await pairInstance.mint(accounts[0]);
 
-      await token0.transfer(pairInstance.address, ethBN(0.1));
+      await token0.transfer(pairInstance.address, eth(0.1));
 
-      await expectRevert(pairInstance.swap(ethBN(0), ethBN(0.36), accounts[0]), 'New product of reserves is less than previous');
+      await expectRevert(pairInstance.swap(eth(0), eth(0.36), accounts[0]), 'New product of reserves is less than previous');
 
-      assert.equal((await token0.balanceOf(accounts[0])).toString(), (ethBN(10).sub(ethBN(1)).sub(ethBN(0.1))).toString());
-      assert.equal((await token1.balanceOf(accounts[0])).toString(), (ethBN(10).sub(ethBN(2))).toString());
+      await assertTokenBalances(accounts[0], {
+        balance0: eth(10).sub(eth(1)).sub(eth(0.1)),
+        balance1: eth(10).sub(eth(2))
+      });
 
-      assert.equal((await pairInstance.reserve0()).toString(), (ethBN(1)).toString());
-      assert.equal((await pairInstance.reserve1()).toString(), (ethBN(2)).toString());
+      await assertReserves({
+        reserve0: eth(1),
+        reserve1: eth(2)
+      });
     });
 
-    it('should fail when given amount is greater than reserve', async () => {    
-      await token0.transfer(pairInstance.address, ethBN(1));
-      await token1.transfer(pairInstance.address, ethBN(2));
+    it('should fail when given amount is greater than reserve', async () => {
+      await token0.transfer(pairInstance.address, eth(1));
+      await token1.transfer(pairInstance.address, eth(2));
       await pairInstance.mint(accounts[0]);
 
-      await expectRevert(pairInstance.swap(ethBN(0), ethBN(2.1), accounts[0]), 'Output amount is greater than reserve');
-      await expectRevert(pairInstance.swap(ethBN(1.1), ethBN(0), accounts[0]), 'Output amount is greater than reserve');
+      await expectRevert(pairInstance.swap(eth(0), eth(2.1), accounts[0]), 'Output amount is greater than reserve');
+      await expectRevert(pairInstance.swap(eth(1.1), eth(0), accounts[0]), 'Output amount is greater than reserve');
     });
 
-    it('should fail when given amounts are zero', async () => {    
-      await token0.transfer(pairInstance.address, ethBN(1));
-      await token1.transfer(pairInstance.address, ethBN(2));
+    it('should fail when given amounts are zero', async () => {
+      await token0.transfer(pairInstance.address, eth(1));
+      await token1.transfer(pairInstance.address, eth(2));
       await pairInstance.mint(accounts[0]);
 
-      await expectRevert(pairInstance.swap(ethBN(0), ethBN(0), accounts[0]), 'Zero output amounts');
+      await expectRevert(pairInstance.swap(eth(0), eth(0), accounts[0]), 'Zero output amounts');
     });
   });
 });
