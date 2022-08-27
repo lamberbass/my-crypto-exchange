@@ -2,6 +2,7 @@ import { ERC20MockInstance, PairInstance } from "../types/truffle-contracts";
 
 const Pair = artifacts.require("Pair");
 const ERC20Mock = artifacts.require("ERC20Mock");
+const { expectRevert } = require('@openzeppelin/test-helpers');
 
 const ethString = (amount: number) => web3.utils.toWei(amount.toString(), 'ether');
 const weiString = (amount: number) => web3.utils.toWei(amount.toString(), 'wei');
@@ -76,6 +77,17 @@ contract('Pair', (accounts: string[]) => {
       assert.equal((await pairInstance.reserve0()).toString(), ethString(3));
       assert.equal((await pairInstance.reserve1()).toString(), ethString(2));
       assert.equal((await pairInstance.totalSupply()).toString(), ethString(2));
+    });
+
+    it('should fail when token amounts are zero', async () => {    
+      await expectRevert.unspecified(pairInstance.mint(accounts[0]));
+    });
+
+    it('should fail when minting zero LP tokens', async () => {
+      await token0.transfer(pairInstance.address, weiBN(1000));
+      await token1.transfer(pairInstance.address, weiBN(1000));
+
+      await expectRevert(pairInstance.mint(accounts[0]), 'Insufficient liquidity tokens minted!');
     });
   });
 
@@ -166,9 +178,22 @@ contract('Pair', (accounts: string[]) => {
       assert.equal((await pairInstance.reserve1()).toString(), weiString(1000));
       assert.equal((await pairInstance.totalSupply()).toString(), weiString(1000));
 
-      // accounts[0] gained the 0.5 eth that accounts[0] lost
+      // accounts[1] gained the 0.5 eth that accounts[0] lost
       assert.equal((await token0.balanceOf(accounts[1])).toString(), (ethBN(10).add(ethBN(0.5)).sub(weiBN(1500))).toString());
       assert.equal((await token1.balanceOf(accounts[1])).toString(), (ethBN(10).sub(weiBN(1000))).toString());
+    });
+
+    it('should fail when total supply is zero', async () => {    
+      await expectRevert.unspecified(pairInstance.burn(accounts[0]));
+    });
+
+    it('should fail when LP tokens are zero', async () => {
+      await token0.transfer(pairInstance.address, ethBN(1));
+      await token1.transfer(pairInstance.address, ethBN(1));
+
+      await pairInstance.mint(accounts[0]);
+
+      await expectRevert(pairInstance.burn(accounts[1]), 'Insufficient liquidity tokens burned!');
     });
   });
 });
