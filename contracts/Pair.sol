@@ -15,6 +15,7 @@ contract Pair is ERC20 {
 
   event Mint(address indexed sender, uint256 amount0, uint256 amount1, uint256 minted);
   event Burn(address indexed sender, uint256 amount0, uint256 amount1, uint256 burned);
+  event Swap(address indexed sender, uint256 amount0, uint256 amount1);
 
   constructor() ERC20("Liquidity Provider Token", "LPT") {}
 
@@ -78,5 +79,35 @@ contract Pair is ERC20 {
     reserve1 = balance1;
 
     emit Burn(to, amount0, amount1, lpTokens);
+  }
+
+  function swap(uint256 amount0Out, uint256 amount1Out, address to) public {
+    if (amount0Out == 0 && amount1Out == 0) {
+      revert('Zero output amounts');
+    }
+
+    if (amount0Out > reserve0 || amount1Out > reserve1) {
+      revert('Output amount is greater than reserve');
+    }
+
+    uint256 balance0 = ERC20(token0).balanceOf(address(this)) - amount0Out;
+    uint256 balance1 = ERC20(token1).balanceOf(address(this)) - amount1Out;
+
+    if (balance0 * balance1 < reserve0 * reserve1) {
+      revert('New product of reserves is less than previous');
+    }
+
+    reserve0 = balance0;
+    reserve1 = balance1;
+
+    if (amount0Out > 0) {
+      ERC20(token0).transfer(to, amount0Out);
+    }
+
+    if (amount1Out > 0) {
+      ERC20(token1).transfer(to, amount1Out);
+    }
+
+    emit Swap(to, amount0Out, amount1Out);
   }
 }

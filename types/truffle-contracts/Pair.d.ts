@@ -49,6 +49,18 @@ export interface Mint {
   };
 }
 
+export interface Swap {
+  name: "Swap";
+  args: {
+    sender: string;
+    amount0: BN;
+    amount1: BN;
+    0: string;
+    1: BN;
+    2: BN;
+  };
+}
+
 export interface Transfer {
   name: "Transfer";
   args: {
@@ -61,7 +73,7 @@ export interface Transfer {
   };
 }
 
-type AllEvents = Approval | Burn | Mint | Transfer;
+type AllEvents = Approval | Burn | Mint | Swap | Transfer;
 
 export interface PairInstance extends Truffle.ContractInstance {
   /**
@@ -299,6 +311,33 @@ export interface PairInstance extends Truffle.ContractInstance {
     ): Promise<number>;
   };
 
+  swap: {
+    (
+      amount0Out: number | BN | string,
+      amount1Out: number | BN | string,
+      to: string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse<AllEvents>>;
+    call(
+      amount0Out: number | BN | string,
+      amount1Out: number | BN | string,
+      to: string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<void>;
+    sendTransaction(
+      amount0Out: number | BN | string,
+      amount1Out: number | BN | string,
+      to: string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      amount0Out: number | BN | string,
+      amount1Out: number | BN | string,
+      to: string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
   methods: {
     /**
      * See {IERC20-allowance}.
@@ -530,6 +569,33 @@ export interface PairInstance extends Truffle.ContractInstance {
         txDetails?: Truffle.TransactionDetails
       ): Promise<string>;
       estimateGas(
+        to: string,
+        txDetails?: Truffle.TransactionDetails
+      ): Promise<number>;
+    };
+
+    swap: {
+      (
+        amount0Out: number | BN | string,
+        amount1Out: number | BN | string,
+        to: string,
+        txDetails?: Truffle.TransactionDetails
+      ): Promise<Truffle.TransactionResponse<AllEvents>>;
+      call(
+        amount0Out: number | BN | string,
+        amount1Out: number | BN | string,
+        to: string,
+        txDetails?: Truffle.TransactionDetails
+      ): Promise<void>;
+      sendTransaction(
+        amount0Out: number | BN | string,
+        amount1Out: number | BN | string,
+        to: string,
+        txDetails?: Truffle.TransactionDetails
+      ): Promise<string>;
+      estimateGas(
+        amount0Out: number | BN | string,
+        amount1Out: number | BN | string,
         to: string,
         txDetails?: Truffle.TransactionDetails
       ): Promise<number>;
