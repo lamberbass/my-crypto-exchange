@@ -3,8 +3,10 @@ import { ERC20MockInstance, PairInstance } from "../types/truffle-contracts";
 const Pair = artifacts.require("Pair");
 const ERC20Mock = artifacts.require("ERC20Mock");
 
-const ethBN = (amount: number) => web3.utils.toBN(web3.utils.toWei(amount.toString(), 'ether'));
-const weiBN = (amount: number) => web3.utils.toBN(web3.utils.toWei(amount.toString(), 'wei'));
+const ethString = (amount: number) => web3.utils.toWei(amount.toString(), 'ether');
+const weiString = (amount: number) => web3.utils.toWei(amount.toString(), 'wei');
+const ethBN = (amount: number) => web3.utils.toBN(ethString(amount));
+const weiBN = (amount: number) => web3.utils.toBN(weiString(amount));
 
 contract('Pair', (accounts: string[]) => {
   describe('Deployment', async () => {
@@ -36,10 +38,10 @@ contract('Pair', (accounts: string[]) => {
 
       await pairInstance.mint(accounts[0]);
 
-      assert.isTrue((await pairInstance.balanceOf(accounts[0])).eq(ethBN(1).sub(weiBN(1000))));
-      assert.isTrue((await pairInstance.reserve0()).eq(ethBN(1)));
-      assert.isTrue((await pairInstance.reserve1()).eq(ethBN(1)));
-      assert.isTrue((await pairInstance.totalSupply()).eq(ethBN(1)));
+      assert.equal((await pairInstance.balanceOf(accounts[0])).toString(), (ethBN(1).sub(weiBN(1000))).toString());
+      assert.equal((await pairInstance.reserve0()).toString(), ethString(1));
+      assert.equal((await pairInstance.reserve1()).toString(), ethString(1));
+      assert.equal((await pairInstance.totalSupply()).toString(), ethString(1));
     });
 
     it('should mint when there\'s liquidity', async () => {    
@@ -53,10 +55,10 @@ contract('Pair', (accounts: string[]) => {
 
       await pairInstance.mint(accounts[0]);
 
-      assert.isTrue((await pairInstance.balanceOf(accounts[0])).eq(ethBN(3).sub(weiBN(1000))));
-      assert.isTrue((await pairInstance.reserve0()).eq(ethBN(3)));
-      assert.isTrue((await pairInstance.reserve1()).eq(ethBN(3)));
-      assert.isTrue((await pairInstance.totalSupply()).eq(ethBN(3)));
+      assert.equal((await pairInstance.balanceOf(accounts[0])).toString(), (ethBN(3).sub(weiBN(1000))).toString());
+      assert.equal((await pairInstance.reserve0()).toString(), ethString(3));
+      assert.equal((await pairInstance.reserve1()).toString(), ethString(3));
+      assert.equal((await pairInstance.totalSupply()).toString(), ethString(3));
     });
 
     it('should mint with unbalanced token amounts', async () => {    
@@ -70,10 +72,10 @@ contract('Pair', (accounts: string[]) => {
 
       await pairInstance.mint(accounts[0]);
 
-      assert.isTrue((await pairInstance.balanceOf(accounts[0])).eq(ethBN(2).sub(weiBN(1000))));
-      assert.isTrue((await pairInstance.reserve0()).eq(ethBN(3)));
-      assert.isTrue((await pairInstance.reserve1()).eq(ethBN(2)));
-      assert.isTrue((await pairInstance.totalSupply()).eq(ethBN(2)));
+      assert.equal((await pairInstance.balanceOf(accounts[0])).toString(), (ethBN(2).sub(weiBN(1000))).toString());
+      assert.equal((await pairInstance.reserve0()).toString(), ethString(3));
+      assert.equal((await pairInstance.reserve1()).toString(), ethString(2));
+      assert.equal((await pairInstance.totalSupply()).toString(), ethString(2));
     });
   });
 
@@ -104,13 +106,13 @@ contract('Pair', (accounts: string[]) => {
 
       await pairInstance.burn(accounts[0]);
 
-      assert.isTrue((await pairInstance.balanceOf(accounts[0])).eq(ethBN(0)));
-      assert.isTrue((await pairInstance.reserve0()).eq(weiBN(1000)));
-      assert.isTrue((await pairInstance.reserve1()).eq(weiBN(1000)));
-      assert.isTrue((await pairInstance.totalSupply()).eq(weiBN(1000)));
+      assert.equal((await pairInstance.balanceOf(accounts[0])).toString(), ethString(0));
+      assert.equal((await pairInstance.reserve0()).toString(), weiString(1000));
+      assert.equal((await pairInstance.reserve1()).toString(), weiString(1000));
+      assert.equal((await pairInstance.totalSupply()).toString(), weiString(1000));
 
-      assert.isTrue((await token0.balanceOf(accounts[0])).eq(ethBN(10).sub(weiBN(1000))));
-      assert.isTrue((await token1.balanceOf(accounts[0])).eq(ethBN(10).sub(weiBN(1000))));
+      assert.equal((await token0.balanceOf(accounts[0])).toString(), (ethBN(10).sub(weiBN(1000))).toString());
+      assert.equal((await token1.balanceOf(accounts[0])).toString(), (ethBN(10).sub(weiBN(1000))).toString());
     });
 
     it('should burn with unbalanced token amounts', async () => {    
@@ -126,13 +128,13 @@ contract('Pair', (accounts: string[]) => {
 
       await pairInstance.burn(accounts[0]);
 
-      assert.isTrue((await pairInstance.balanceOf(accounts[0])).eq(ethBN(0)));
-      assert.isTrue((await pairInstance.reserve0()).eq(weiBN(1500)));
-      assert.isTrue((await pairInstance.reserve1()).eq(weiBN(1000)));
-      assert.isTrue((await pairInstance.totalSupply()).eq(weiBN(1000)));
+      assert.equal((await pairInstance.balanceOf(accounts[0])).toString(), ethString(0));
+      assert.equal((await pairInstance.reserve0()).toString(), weiString(1500));
+      assert.equal((await pairInstance.reserve1()).toString(), weiString(1000));
+      assert.equal((await pairInstance.totalSupply()).toString(), weiString(1000));
 
-      assert.isTrue((await token0.balanceOf(accounts[0])).eq(ethBN(10).sub(weiBN(1500))));
-      assert.isTrue((await token1.balanceOf(accounts[0])).eq(ethBN(10).sub(weiBN(1000))));
+      assert.equal((await token0.balanceOf(accounts[0])).toString(), (ethBN(10).sub(weiBN(1500))).toString());
+      assert.equal((await token1.balanceOf(accounts[0])).toString(), (ethBN(10).sub(weiBN(1000))).toString());
     });
 
     it('should burn with different users', async () => {    
@@ -148,25 +150,25 @@ contract('Pair', (accounts: string[]) => {
 
       await pairInstance.burn(accounts[0]);
 
-      assert.isTrue((await pairInstance.balanceOf(accounts[0])).eq(ethBN(0)));
-      assert.isTrue((await pairInstance.reserve0()).eq(ethBN(1.5)));
-      assert.isTrue((await pairInstance.reserve1()).eq(ethBN(1)));
-      assert.isTrue((await pairInstance.totalSupply()).eq(ethBN(1)));
+      assert.equal((await pairInstance.balanceOf(accounts[0])).toString(), ethString(0));
+      assert.equal((await pairInstance.reserve0()).toString(), ethString(1.5));
+      assert.equal((await pairInstance.reserve1()).toString(), ethString(1));
+      assert.equal((await pairInstance.totalSupply()).toString(), ethString(1));
 
       // accounts[0] lost 0.5 eth for providing unbalanced liquidity
-      assert.isTrue((await token0.balanceOf(accounts[0])).eq(ethBN(10).sub(ethBN(0.5))));
-      assert.isTrue((await token1.balanceOf(accounts[0])).eq(ethBN(10)));
+      assert.equal((await token0.balanceOf(accounts[0])).toString(), (ethBN(10).sub(ethBN(0.5))).toString());
+      assert.equal((await token1.balanceOf(accounts[0])).toString(), ethString(10));
 
       await pairInstance.burn(accounts[1]);
 
-      assert.isTrue((await pairInstance.balanceOf(accounts[1])).eq(ethBN(0)));
-      assert.isTrue((await pairInstance.reserve0()).eq(weiBN(1500)));
-      assert.isTrue((await pairInstance.reserve1()).eq(weiBN(1000)));
-      assert.isTrue((await pairInstance.totalSupply()).eq(weiBN(1000)));
+      assert.equal((await pairInstance.balanceOf(accounts[1])).toString(), ethString(0));
+      assert.equal((await pairInstance.reserve0()).toString(), weiString(1500));
+      assert.equal((await pairInstance.reserve1()).toString(), weiString(1000));
+      assert.equal((await pairInstance.totalSupply()).toString(), weiString(1000));
 
       // accounts[0] gained the 0.5 eth that accounts[0] lost
-      assert.isTrue((await token0.balanceOf(accounts[1])).eq(ethBN(10).add(ethBN(0.5)).sub(weiBN(1500))));
-      assert.isTrue((await token1.balanceOf(accounts[1])).eq(ethBN(10).sub(weiBN(1000))));
+      assert.equal((await token0.balanceOf(accounts[1])).toString(), (ethBN(10).add(ethBN(0.5)).sub(weiBN(1500))).toString());
+      assert.equal((await token1.balanceOf(accounts[1])).toString(), (ethBN(10).sub(weiBN(1000))).toString());
     });
   });
 });
