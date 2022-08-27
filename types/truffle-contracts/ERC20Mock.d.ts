@@ -5,8 +5,12 @@
 import BN from "bn.js";
 import { EventData, PastEventOptions } from "web3-eth-contract";
 
-export interface PairContract extends Truffle.Contract<PairInstance> {
-  "new"(meta?: Truffle.TransactionDetails): Promise<PairInstance>;
+export interface ERC20MockContract extends Truffle.Contract<ERC20MockInstance> {
+  "new"(
+    name: string,
+    symbol: string,
+    meta?: Truffle.TransactionDetails
+  ): Promise<ERC20MockInstance>;
 }
 
 export interface Approval {
@@ -17,18 +21,6 @@ export interface Approval {
     value: BN;
     0: string;
     1: string;
-    2: BN;
-  };
-}
-
-export interface Mint {
-  name: "Mint";
-  args: {
-    to: string;
-    amount0: BN;
-    amount1: BN;
-    0: string;
-    1: BN;
     2: BN;
   };
 }
@@ -45,9 +37,9 @@ export interface Transfer {
   };
 }
 
-type AllEvents = Approval | Mint | Transfer;
+type AllEvents = Approval | Transfer;
 
-export interface PairInstance extends Truffle.ContractInstance {
+export interface ERC20MockInstance extends Truffle.ContractInstance {
   /**
    * See {IERC20-allowance}.
    */
@@ -153,18 +145,10 @@ export interface PairInstance extends Truffle.ContractInstance {
    */
   name(txDetails?: Truffle.TransactionDetails): Promise<string>;
 
-  reserve0(txDetails?: Truffle.TransactionDetails): Promise<BN>;
-
-  reserve1(txDetails?: Truffle.TransactionDetails): Promise<BN>;
-
   /**
    * Returns the symbol of the token, usually a shorter version of the name.
    */
   symbol(txDetails?: Truffle.TransactionDetails): Promise<string>;
-
-  token0(txDetails?: Truffle.TransactionDetails): Promise<string>;
-
-  token1(txDetails?: Truffle.TransactionDetails): Promise<string>;
 
   /**
    * See {IERC20-totalSupply}.
@@ -227,39 +211,24 @@ export interface PairInstance extends Truffle.ContractInstance {
     ): Promise<number>;
   };
 
-  initialize: {
+  mint: {
     (
-      _token0: string,
-      _token1: string,
+      amount: number | BN | string,
+      to: string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<Truffle.TransactionResponse<AllEvents>>;
     call(
-      _token0: string,
-      _token1: string,
+      amount: number | BN | string,
+      to: string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<void>;
     sendTransaction(
-      _token0: string,
-      _token1: string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<string>;
-    estimateGas(
-      _token0: string,
-      _token1: string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<number>;
-  };
-
-  mint: {
-    (to: string, txDetails?: Truffle.TransactionDetails): Promise<
-      Truffle.TransactionResponse<AllEvents>
-    >;
-    call(to: string, txDetails?: Truffle.TransactionDetails): Promise<BN>;
-    sendTransaction(
+      amount: number | BN | string,
       to: string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<string>;
     estimateGas(
+      amount: number | BN | string,
       to: string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<number>;
@@ -371,18 +340,10 @@ export interface PairInstance extends Truffle.ContractInstance {
      */
     name(txDetails?: Truffle.TransactionDetails): Promise<string>;
 
-    reserve0(txDetails?: Truffle.TransactionDetails): Promise<BN>;
-
-    reserve1(txDetails?: Truffle.TransactionDetails): Promise<BN>;
-
     /**
      * Returns the symbol of the token, usually a shorter version of the name.
      */
     symbol(txDetails?: Truffle.TransactionDetails): Promise<string>;
-
-    token0(txDetails?: Truffle.TransactionDetails): Promise<string>;
-
-    token1(txDetails?: Truffle.TransactionDetails): Promise<string>;
 
     /**
      * See {IERC20-totalSupply}.
@@ -445,39 +406,24 @@ export interface PairInstance extends Truffle.ContractInstance {
       ): Promise<number>;
     };
 
-    initialize: {
+    mint: {
       (
-        _token0: string,
-        _token1: string,
+        amount: number | BN | string,
+        to: string,
         txDetails?: Truffle.TransactionDetails
       ): Promise<Truffle.TransactionResponse<AllEvents>>;
       call(
-        _token0: string,
-        _token1: string,
+        amount: number | BN | string,
+        to: string,
         txDetails?: Truffle.TransactionDetails
       ): Promise<void>;
       sendTransaction(
-        _token0: string,
-        _token1: string,
-        txDetails?: Truffle.TransactionDetails
-      ): Promise<string>;
-      estimateGas(
-        _token0: string,
-        _token1: string,
-        txDetails?: Truffle.TransactionDetails
-      ): Promise<number>;
-    };
-
-    mint: {
-      (to: string, txDetails?: Truffle.TransactionDetails): Promise<
-        Truffle.TransactionResponse<AllEvents>
-      >;
-      call(to: string, txDetails?: Truffle.TransactionDetails): Promise<BN>;
-      sendTransaction(
+        amount: number | BN | string,
         to: string,
         txDetails?: Truffle.TransactionDetails
       ): Promise<string>;
       estimateGas(
+        amount: number | BN | string,
         to: string,
         txDetails?: Truffle.TransactionDetails
       ): Promise<number>;
