@@ -1,14 +1,11 @@
 import { ERC20MockInstance, FactoryInstance, PairInstance } from "../types/truffle-contracts";
+import { eth, wei } from "../utils/amount-helper";
+import { AssertHelper } from "../utils/assert-helper";
 
 const Factory = artifacts.require("Factory");
 const Pair = artifacts.require("Pair");
 const ERC20Mock = artifacts.require("ERC20Mock");
 const { expectRevert } = require('@openzeppelin/test-helpers');
-
-const eth = (amount: number) => web3.utils.toBN(web3.utils.toWei(amount.toString(), 'ether'));
-const wei = (amount: number) => web3.utils.toBN(web3.utils.toWei(amount.toString(), 'wei'));
-
-const assertEqual = async (actual: Promise<BN>, expected: BN) => assert.equal((await actual).toString(), expected.toString());
 
 contract('Pair', (accounts: string[]) => {
   let pairInstance: PairInstance;
@@ -33,18 +30,15 @@ contract('Pair', (accounts: string[]) => {
   });
 
   async function assertLpBalanceAndTotalSupply(account: string, expected: { balance: BN, totalSupply: BN }) {
-    await assertEqual(pairInstance.balanceOf(account), expected.balance);
-    await assertEqual(pairInstance.totalSupply(), expected.totalSupply);
+    await AssertHelper.assertLpBalanceAndTotalSupply(pairInstance, account, expected);
   }
 
   async function assertReserves(expected: { reserve0: BN, reserve1: BN }) {
-    await assertEqual(pairInstance.reserve0(), expected.reserve0);
-    await assertEqual(pairInstance.reserve1(), expected.reserve1);
+    await AssertHelper.assertReserves(pairInstance, expected);
   }
 
   const assertTokenBalances = async (account: string, expected: { balance0: BN, balance1: BN }) => {
-    await assertEqual(token0.balanceOf(account), expected.balance0);
-    await assertEqual(token1.balanceOf(account), expected.balance1);
+    await AssertHelper.assertTokenBalances(token0, token1, account, expected);
   }
 
   describe('Mint', async () => {

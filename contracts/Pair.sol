@@ -13,7 +13,7 @@ contract Pair is ERC20 {
   uint256 public reserve0;
   uint256 public reserve1;
 
-  event Mint(address indexed sender, uint256 amount0, uint256 amount1, uint256 minte, address indexed to);
+  event Mint(address indexed sender, uint256 amount0, uint256 amount1, uint256 minted, address indexed to);
   event Burn(address indexed sender, uint256 amount0, uint256 amount1, uint256 burned, address indexed to);
   event Swap(address indexed sender, uint256 amount0, uint256 amount1, address indexed to);
 
