@@ -1,5 +1,6 @@
-import { ERC20MockInstance, PairInstance } from "../types/truffle-contracts";
+import { ERC20MockInstance, FactoryInstance, PairInstance } from "../types/truffle-contracts";
 
+const Factory = artifacts.require("Factory");
 const Pair = artifacts.require("Pair");
 const ERC20Mock = artifacts.require("ERC20Mock");
 const { expectRevert } = require('@openzeppelin/test-helpers');
@@ -18,8 +19,11 @@ contract('Pair', (accounts: string[]) => {
     token0 = await ERC20Mock.new("Token 0", "T0");
     token1 = await ERC20Mock.new("Token 1", "T1");
 
-    pairInstance = await Pair.new();
-    await pairInstance.initialize(token0.address, token1.address);
+    const factoryInstance: FactoryInstance = await Factory.new();
+    await factoryInstance.createPair(token0.address, token1.address);
+
+    const pairAddress: string = await factoryInstance.pairs(token0.address, token1.address);
+    pairInstance = await Pair.at(pairAddress);
 
     await token0.mint(eth(10), accounts[0]);
     await token1.mint(eth(10), accounts[0]);
@@ -42,13 +46,6 @@ contract('Pair', (accounts: string[]) => {
     await assertEqual(token0.balanceOf(account), expected.balance0);
     await assertEqual(token1.balanceOf(account), expected.balance1);
   }
-
-  describe('Deploy', async () => {
-    it('should be deployed', async () => {
-      const pairInstance: PairInstance = await Pair.deployed();
-      assert.isNotNull(pairInstance);
-    });
-  });
 
   describe('Mint', async () => {
     it('should mint when there\'s no liquidity', async () => {

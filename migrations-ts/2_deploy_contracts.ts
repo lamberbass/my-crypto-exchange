@@ -1,7 +1,7 @@
-const Pair = artifacts.require('Pair');
+const Factory = artifacts.require('Factory');
 
 const migration: Truffle.Migration = function (deployer) {
-  deployer.deploy(Pair);
+  deployer.deploy(Factory);
 }
 
 module.exports = migration;
