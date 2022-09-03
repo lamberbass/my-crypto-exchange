@@ -81,6 +81,52 @@ library Library {
     return amountsOut;
   }
 
+  function getAmountIn(
+    uint256 amountOut,
+    uint256 reserveIn,
+    uint256 reserveOut
+  ) public pure returns (uint256) {
+    if (amountOut == 0) {
+      revert('Insufficient amount');
+    }
+
+    if (reserveIn == 0 || reserveOut == 0) {
+      revert('Insufficient liquidity');
+    }
+
+    // apply 0.3% fee
+    uint256 numerator = reserveIn * amountOut * 1000;
+    uint256 denominator = (reserveOut - amountOut) * 997;
+
+    // add 1 to handle truncated result
+    return (numerator / denominator) + 1;
+  }
+
+  function getAmountsIn(
+    address factory,
+    uint256 amountOut,
+    address[] memory path
+  ) public view returns (uint256[] memory) {
+    if (path.length < 2) {
+      revert('Invalid path');
+    }
+
+    uint256[] memory amountsIn = new uint256[](path.length);
+    amountsIn[amountsIn.length - 1] = amountOut;
+
+    for (uint256 i = path.length - 1; i > 0; i--) {
+      (uint256 reserve0, uint256 reserve1) = getReserves(
+        factory,
+        path[i - 1],
+        path[i]
+      );
+    
+      amountsIn[i - 1] = getAmountIn(amountsIn[i], reserve0, reserve1);
+    }
+
+    return amountsIn;
+  }
+
   function pairFor(
     address factoryAddress,
     address tokenA,

@@ -142,4 +142,77 @@ contract('Library', async (accounts: string[]) => {
       );
     });
   });
+
+  describe('Get amount in', async () => {
+    it('should return input amount with 0.3% fee applied', async () => {
+      let amountIn: BN = await libraryInstance.getAmountIn(wei(1495), eth(1), eth(1.5));
+      assert.equal(amountIn.toString(), wei(1000).toString());
+    });
+
+    it('should fail when given zero output amount', async () => {
+      await expectRevert(
+        libraryInstance.getAmountIn(eth(0), eth(1), eth(1.5)),
+        'Insufficient amount'
+      );
+    });
+
+    it('should fail when given zero input reserve', async () => {
+      await expectRevert(
+        libraryInstance.getAmountIn(wei(1000), eth(0), eth(1.5)),
+        'Insufficient liquidity'
+      );
+    });
+
+    it('should fail when given zero output reserve', async () => {
+      await expectRevert(
+        libraryInstance.getAmountIn(wei(1000), eth(1), eth(0)),
+        'Insufficient liquidity'
+      );
+    });
+  });
+
+  describe('Get amounts in', async () => {
+    it('should return input amounts of path', async () => {
+      await token0.transfer(pair01Instance.address, eth(1));
+      await token1.transfer(pair01Instance.address, eth(2));
+      await pair01Instance.mint(accounts[0]);
+
+      await token1.transfer(pair12Instance.address, eth(1));
+      await token2.transfer(pair12Instance.address, eth(0.5));
+      await pair12Instance.mint(accounts[0]);
+
+      await token2.transfer(pair23Instance.address, eth(1));
+      await token3.transfer(pair23Instance.address, eth(2));
+      await pair23Instance.mint(accounts[0]);
+
+      const path: string[] = [
+        token0.address,
+        token1.address,
+        token2.address,
+        token3.address
+      ];
+
+      const amountsOut: BN[] = await libraryInstance.getAmountsIn(
+        factoryInstance.address, 
+        eth(0.1),
+        path);
+
+      assert.equal(amountsOut.length, path.length);
+      assert.equal(amountsOut[0].toString(), '63113405152841847');
+      assert.equal(amountsOut[1].toString(), '118398043685444580');
+      assert.equal(amountsOut[2].toString(), '52789948793749671');
+      assert.equal(amountsOut[3].toString(), eth(0.1).toString());
+    });
+
+    it('should fail when given path with only one token', async () => {
+      await expectRevert(
+        libraryInstance.getAmountsIn(
+          factoryInstance.address, 
+          eth(0.1), 
+          [token0.address]
+        ),
+        'Invalid path'
+      );
+    });
+  });
 });

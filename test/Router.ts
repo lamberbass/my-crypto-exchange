@@ -411,4 +411,51 @@ contract('Router', (accounts: string[]) => {
       await AssertHelper.assertEqual(token2.balanceOf(accounts[0]), eth(20).sub(eth(1)).add(eth('0.186691414219734305')));
     });
   });
+
+  describe('Swap tokens for exact tokens', async () => {
+    it('should swap tokens for exact tokens', async () => {
+      await token0.approve(routerInstance.address, eth(1));
+      await token1.approve(routerInstance.address, eth(2));
+      await token2.approve(routerInstance.address, eth(1));
+
+      await routerInstance.addLiquidity(
+        token0.address,
+        token1.address,
+        eth(1),
+        eth(1),
+        eth(1),
+        eth(1),
+        accounts[0]
+      );
+
+      await routerInstance.addLiquidity(
+        token1.address,
+        token2.address,
+        eth(1),
+        eth(1),
+        eth(1),
+        eth(1),
+        accounts[0]
+      );
+
+      const path: string[] = [
+        token0.address,
+        token1.address,
+        token2.address
+      ];
+
+      await token0.approve(routerInstance.address, eth(0.3));
+
+      await routerInstance.swapTokensForExactTokens(
+        eth('0.186691414219734305'),
+        eth(0.3),
+        path,
+        accounts[0]
+      );
+
+      await AssertHelper.assertEqual(token0.balanceOf(accounts[0]), eth(20).sub(eth(1)).sub(eth(0.3)));
+      await AssertHelper.assertEqual(token1.balanceOf(accounts[0]), eth(20).sub(eth(2)));
+      await AssertHelper.assertEqual(token2.balanceOf(accounts[0]), eth(20).sub(eth(1)).add(eth('0.186691414219734305')));
+    });
+  });
 });

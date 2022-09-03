@@ -95,6 +95,31 @@ contract Router {
     swap(amounts, path, to);
   }
 
+  function swapTokensForExactTokens(
+    uint256 amountOut,
+    uint256 amountInMax,
+    address[] calldata path,
+    address to
+  ) public returns (uint256[] memory amounts) {
+    amounts = Library.getAmountsIn(
+      address(factory),
+      amountOut,
+      path
+    );
+    
+    if (amounts[amounts.length - 1] > amountInMax) {
+      revert('Excessive input amount');
+    }
+            
+    ERC20(path[0]).transferFrom(
+      msg.sender,
+      Library.pairFor(address(factory), path[0], path[1]),
+      amounts[0]
+    );
+        
+    swap(amounts, path, to);
+  }
+
   function calculateLiquidity(
     address tokenA,
     address tokenB,
