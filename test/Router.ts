@@ -218,4 +218,147 @@ contract('Router', (accounts: string[]) => {
       });
     });
   });
+
+  describe('Remove Liquidity', async () => {
+    it('should remove all liquidity', async () => {
+      await token0.approve(routerInstance.address, eth(1));
+      await token1.approve(routerInstance.address, eth(1));
+
+      await routerInstance.addLiquidity(
+        token0.address,
+        token1.address,
+        eth(1),
+        eth(1),
+        eth(1),
+        eth(1),
+        accounts[0]
+      );
+
+      const liquidity: BN = await pairInstance.balanceOf(accounts[0]);
+
+      await routerInstance.removeLiquidity(
+        token0.address,
+        token1.address,
+        liquidity,
+        eth(1).sub(wei(1000)),
+        eth(1).sub(wei(1000)),
+        accounts[0]
+      );
+
+      await assertReserves({
+        reserve0: wei(1000),
+        reserve1: wei(1000)
+      });
+
+      await assertLpBalanceAndTotalSupply(accounts[0], {
+        balance: eth(0),
+        totalSupply: wei(1000)
+      });
+
+      await assertTokenBalances(accounts[0], {
+        balance0: eth(20).sub(wei(1000)),
+        balance1: eth(20).sub(wei(1000))
+      });
+    });
+
+    it('should remove a portion of available liquidity', async () => {
+      await token0.approve(routerInstance.address, eth(1));
+      await token1.approve(routerInstance.address, eth(1));
+
+      await routerInstance.addLiquidity(
+        token0.address,
+        token1.address,
+        eth(1),
+        eth(1),
+        eth(1),
+        eth(1),
+        accounts[0]
+      );
+
+      const liquidity: BN = await pairInstance.balanceOf(accounts[0]);
+      const liq30percent : BN = liquidity.mul(web3.utils.toBN(3)).div(web3.utils.toBN(10))
+      
+      await routerInstance.removeLiquidity(
+        token0.address,
+        token1.address,
+        liq30percent,
+        eth(0.3).sub(wei(300)),
+        eth(0.3).sub(wei(1300)),
+        accounts[0]
+      );
+
+      await assertReserves({
+        reserve0: eth(0.7).add(wei(300)),
+        reserve1: eth(0.7).add(wei(300))
+      });
+
+      await assertLpBalanceAndTotalSupply(accounts[0], {
+        balance: eth(0.7).sub(wei(700)),
+        totalSupply: eth(0.7).add(wei(300))
+      });
+
+      await assertTokenBalances(accounts[0], {
+        balance0: eth(20).sub(eth(0.7)).sub(wei(300)),
+        balance1: eth(20).sub(eth(0.7)).sub(wei(300))
+      });
+    });
+
+    it('should fail when amount A is insufficient', async () => {
+      await token0.approve(routerInstance.address, eth(1));
+      await token1.approve(routerInstance.address, eth(1));
+
+      await routerInstance.addLiquidity(
+        token0.address,
+        token1.address,
+        eth(1),
+        eth(1),
+        eth(1),
+        eth(1),
+        accounts[0]
+      );
+
+      const liquidity: BN = await pairInstance.balanceOf(accounts[0]);
+      
+      await expectRevert(
+        routerInstance.removeLiquidity(
+          token0.address,
+          token1.address,
+          liquidity,
+          eth(1),
+          eth(1).sub(wei(1000)),
+          accounts[0]
+        ),
+        'Insufficient A amount'
+      );
+    });
+
+    it('should fail when amount B is insufficient', async () => {
+      await token0.approve(routerInstance.address, eth(1));
+      await token1.approve(routerInstance.address, eth(1));
+
+      await routerInstance.addLiquidity(
+        token0.address,
+        token1.address,
+        eth(1),
+        eth(1),
+        eth(1),
+        eth(1),
+        accounts[0]
+      );
+
+      const liquidity: BN = await pairInstance.balanceOf(accounts[0]);
+      
+      await expectRevert(
+        routerInstance.removeLiquidity(
+          token0.address,
+          token1.address,
+          liquidity,
+          eth(1).sub(wei(1000)),
+          eth(1),
+          accounts[0]
+        ),
+        'Insufficient B amount'
+      );
+    });
+  });
 });

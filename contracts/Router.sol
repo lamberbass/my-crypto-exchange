@@ -26,7 +26,7 @@ contract Router {
     uint256 amountB,
     uint256 liquidity
   ) {
-    address pairAddress = factory.pairs(tokenA, tokenB);
+    address pairAddress = Library.pairFor(address(factory), tokenA, tokenB);
 
     if (pairAddress == address(0)) {
       pairAddress = factory.createPair(tokenA, tokenB);
@@ -44,6 +44,30 @@ contract Router {
     ERC20(tokenA).transferFrom(msg.sender, pairAddress, amountA);
     ERC20(tokenB).transferFrom(msg.sender, pairAddress, amountB);
     liquidity = Pair(pairAddress).mint(to);
+  }
+
+  function removeLiquidity(        
+    address tokenA,
+    address tokenB,
+    uint256 liquidity,
+    uint256 amountAMin,
+    uint256 amountBMin,
+    address to
+  ) public returns (
+    uint256 amountA,
+    uint256 amountB
+  ) {
+    address pairAddress = Library.pairFor(address(factory), tokenA, tokenB);
+        
+    (amountA, amountB) = Pair(pairAddress).burn(to, liquidity);
+    
+    if (amountA < amountAMin) {
+      revert('Insufficient A amount');
+    }
+
+    if (amountB < amountBMin) {
+      revert('Insufficient B amount');
+    }
   }
 
   function calculateLiquidity(
