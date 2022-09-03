@@ -297,7 +297,7 @@ contract('Pair', (accounts: string[]) => {
 
       await token0.transfer(pairInstance.address, eth(0.1));
 
-      await expectRevert(pairInstance.swap(eth(0), eth(0.36), accounts[0]), 'New product of reserves is less than previous');
+      await expectRevert(pairInstance.swap(eth(0), eth('0.181322178776029827'), accounts[0]), 'New product of reserves is less than previous');
 
       await assertTokenBalances(accounts[0], {
         balance0: eth(10).sub(eth(1)).sub(eth(0.1)),

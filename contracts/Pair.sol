@@ -88,16 +88,6 @@ contract Pair is ERC20 {
       revert('Output amount is greater than reserve');
     }
 
-    uint256 balance0 = ERC20(token0).balanceOf(address(this)) - amount0Out;
-    uint256 balance1 = ERC20(token1).balanceOf(address(this)) - amount1Out;
-
-    if (balance0 * balance1 < reserve0 * reserve1) {
-      revert('New product of reserves is less than previous');
-    }
-
-    reserve0 = balance0;
-    reserve1 = balance1;
-
     if (amount0Out > 0) {
       ERC20(token0).transfer(to, amount0Out);
     }
@@ -105,6 +95,35 @@ contract Pair is ERC20 {
     if (amount1Out > 0) {
       ERC20(token1).transfer(to, amount1Out);
     }
+
+    uint256 balance0 = ERC20(token0).balanceOf(address(this));
+    uint256 balance1 = ERC20(token1).balanceOf(address(this));
+
+    uint256 amount0In = balance0 - (reserve0 - amount0Out);
+    uint256 amount1In = balance1 - (reserve1 - amount1Out);
+
+    if (amount0In < 0) {
+      amount0In = 0;
+    }
+
+    if (amount1In < 0) {
+      amount1In = 0;
+    }
+
+    if (amount0In == 0 && amount1In == 0) {
+      revert('Zero input amounts');
+    }
+
+    // apply 0.3% fee
+    uint256 balance0AfterFee = (balance0 * 1000) - (amount0In * 3);
+    uint256 balance1AfterFee = (balance1 * 1000) - (amount1In * 3);
+
+    if (balance0AfterFee * balance1AfterFee < reserve0 * reserve1 * (1000**2)) {
+      revert('New product of reserves is less than previous');
+    }
+
+    reserve0 = balance0;
+    reserve1 = balance1;
 
     emit Swap(msg.sender, amount0Out, amount1Out, to);
   }
