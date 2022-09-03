@@ -14,6 +14,7 @@ contract('Router', (accounts: string[]) => {
   let pairInstance: PairInstance;
   let token0: ERC20MockInstance;
   let token1: ERC20MockInstance;
+  let token2: ERC20MockInstance;
 
   beforeEach(async () => {
     factoryInstance = await Factory.new();
@@ -21,9 +22,11 @@ contract('Router', (accounts: string[]) => {
 
     token0 = await ERC20Mock.new("Token 0", "T0");
     token1 = await ERC20Mock.new("Token 1", "T1");
+    token2 = await ERC20Mock.new("Token 2", "T2");
 
     await token0.mint(eth(20), accounts[0]);
     await token1.mint(eth(20), accounts[0]);
+    await token2.mint(eth(20), accounts[0]);
 
     await factoryInstance.createPair(token0.address, token1.address);
     const pairAddress: string = await factoryInstance.pairs(token0.address, token1.address);
@@ -276,8 +279,8 @@ contract('Router', (accounts: string[]) => {
       );
 
       const liquidity: BN = await pairInstance.balanceOf(accounts[0]);
-      const liq30percent : BN = liquidity.mul(web3.utils.toBN(3)).div(web3.utils.toBN(10))
-      
+      const liq30percent: BN = liquidity.mul(web3.utils.toBN(3)).div(web3.utils.toBN(10))
+
       await routerInstance.removeLiquidity(
         token0.address,
         token1.address,
@@ -318,7 +321,7 @@ contract('Router', (accounts: string[]) => {
       );
 
       const liquidity: BN = await pairInstance.balanceOf(accounts[0]);
-      
+
       await expectRevert(
         routerInstance.removeLiquidity(
           token0.address,
@@ -347,7 +350,7 @@ contract('Router', (accounts: string[]) => {
       );
 
       const liquidity: BN = await pairInstance.balanceOf(accounts[0]);
-      
+
       await expectRevert(
         routerInstance.removeLiquidity(
           token0.address,
@@ -359,6 +362,53 @@ contract('Router', (accounts: string[]) => {
         ),
         'Insufficient B amount'
       );
+    });
+  });
+
+  describe('Swap exact tokens for tokens', async () => {
+    it('should swap exact tokens for tokens', async () => {
+      await token0.approve(routerInstance.address, eth(1));
+      await token1.approve(routerInstance.address, eth(2));
+      await token2.approve(routerInstance.address, eth(1));
+
+      await routerInstance.addLiquidity(
+        token0.address,
+        token1.address,
+        eth(1),
+        eth(1),
+        eth(1),
+        eth(1),
+        accounts[0]
+      );
+
+      await routerInstance.addLiquidity(
+        token1.address,
+        token2.address,
+        eth(1),
+        eth(1),
+        eth(1),
+        eth(1),
+        accounts[0]
+      );
+
+      const path: string[] = [
+        token0.address,
+        token1.address,
+        token2.address
+      ];
+
+      await token0.approve(routerInstance.address, eth(0.3));
+
+      await routerInstance.swapExactTokensForTokens(
+        eth(0.3),
+        eth(0.1),
+        path,
+        accounts[0]
+      );
+
+      await AssertHelper.assertEqual(token0.balanceOf(accounts[0]), eth(20).sub(eth(0.3)).sub(eth(1)));
+      await AssertHelper.assertEqual(token1.balanceOf(accounts[0]), eth(20).sub(eth(2)));
+      await AssertHelper.assertEqual(token2.balanceOf(accounts[0]), eth(20).sub(eth(1)).add(eth('0.186691414219734305')));
     });
   });
 });

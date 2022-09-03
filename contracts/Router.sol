@@ -70,6 +70,31 @@ contract Router {
     }
   }
 
+  function swapExactTokensForTokens(
+    uint256 amountIn,
+    uint256 amountOutMin,
+    address[] calldata path,
+    address to
+  ) public returns (uint256[] memory amounts) {
+    amounts = Library.getAmountsOut(
+      address(factory),
+      amountIn,
+      path
+    );
+    
+    if (amounts[amounts.length - 1] < amountOutMin) {
+      revert('Insufficient output amount');
+    }
+            
+    ERC20(path[0]).transferFrom(
+      msg.sender,
+      Library.pairFor(address(factory), path[0], path[1]),
+      amounts[0]
+    );
+        
+    swap(amounts, path, to);
+  }
+
   function calculateLiquidity(
     address tokenA,
     address tokenB,
@@ -104,6 +129,27 @@ contract Router {
                 
         (amountA, amountB) = (amountAOptimal, amountBDesired);
       }
+    }
+  }
+
+  function swap(
+    uint256[] memory amounts,
+    address[] memory path,
+    address to
+  ) internal {
+    for (uint256 i; i < path.length - 1; i++) {
+      (address input, address output) = (path[i], path[i + 1]);
+      Pair pair = Pair(Library.pairFor(address(factory), input, output));
+      
+      (uint256 amount0Out, uint256 amount1Out) = input == pair.token0()
+        ? (uint256(0), amounts[i + 1])
+        : (amounts[i + 1], uint256(0));
+
+      address _to = i < path.length - 2
+        ? Library.pairFor(address(factory), output, path[i + 2])
+        : to;
+            
+      pair.swap(amount0Out, amount1Out, _to);
     }
   }
 }
