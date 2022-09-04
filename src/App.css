@@ -8,6 +8,17 @@
   color: white;
 }
 
+.App-buttons {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.App-buttons button {
+  margin: 10px;
+}
+
 .App-logo {
   margin-top: 50px;
   width: 25vw;
