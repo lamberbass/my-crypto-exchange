@@ -1,4 +1,8 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["./migrations-ts/*.ts", "./types/**/*.ts"]
+  "include": ["./migrations-ts/*.ts", "./types/**/*.ts"],
+  "compilerOptions": {
+    "module": "CommonJS",
+    "noEmit": false
+  },
 }
