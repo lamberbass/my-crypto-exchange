@@ -2,9 +2,13 @@ import './App.css';
 import { useEffect, useState } from 'react';
 import { addLiquidity, getCurrentAccount, getTokenBalances, mintTokensWithZeroBalance, swapExactTokensForTokens } from './services/web3.service';
 import Tokens from './artifacts/deployed-tokens.json';
+import { eth } from './utils/amount-helper';
 
 function App() {
   const [currentAccount, setCurrentAccount] = useState('');
+
+  const slippageTolerance: number = 50;
+  const getMinAmount = (amount: number): number => amount * (100 - slippageTolerance) / 100;
 
   const connectWallet = async () => {
     const account: string = await getCurrentAccount();
@@ -14,36 +18,34 @@ function App() {
   useEffect(() => { connectWallet(); }, []);
 
   const addLiq = async () => {
-    const tokenA: string = Tokens.LINK;
-    const tokenB: string = Tokens.SHIB;
+    const tokenA: string = Tokens.ETH;
+    const tokenB: string = Tokens.USDC;
 
-    const amountTokenA: string = web3.utils.toWei('100', 'ether');
-    const amountTokenB: string = web3.utils.toWei('100', 'ether');
-    const minAmountTokenA: string = web3.utils.toWei('1', 'ether');
-    const minAmountTokenB: string = web3.utils.toWei('1', 'ether');
+    const amountA: number = 100;
+    const amountB: number = 100;
 
     await addLiquidity(
       tokenA,
       tokenB,
-      amountTokenA,
-      amountTokenB,
-      minAmountTokenA,
-      minAmountTokenB
+      eth(amountA),
+      eth(amountB),
+      eth(getMinAmount(amountA)),
+      eth(getMinAmount(amountB)),
     );
   };
 
   const swap = async () => {
-    const tokenA: string = Tokens.LINK;
-    const tokenB: string = Tokens.SHIB;
+    const tokenA: string = Tokens.ETH;
+    const tokenB: string = Tokens.USDC;
 
-    const amountTokenA: string = web3.utils.toWei('10', 'ether');
-    const minAmountTokenB: string = web3.utils.toWei('1', 'ether');
+    const amountA: number = 100;
+    const minAmountB: number = 50;
 
     await swapExactTokensForTokens(
       tokenA,
       tokenB,
-      amountTokenA,
-      minAmountTokenB
+      eth(amountA),
+      eth(minAmountB)
     );
   };
 

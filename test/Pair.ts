@@ -1,5 +1,5 @@
 import { ERC20MockInstance, FactoryInstance, PairInstance } from "../types/truffle-contracts";
-import { eth, wei } from "../utils/amount-helper";
+import { eth, wei } from "../src/utils/amount-helper";
 import { AssertHelper } from "../utils/assert-helper";
 
 const Factory = artifacts.require("Factory");

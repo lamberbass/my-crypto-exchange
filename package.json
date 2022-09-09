@@ -9,6 +9,7 @@
   "scripts": {
     "transpile-migrations": "tsc -p ./tsconfig.migrate.json --outDir ./migrations",
     "generate-types": "typechain --target=truffle-v5 'build/contracts/*.json'",
+    "generate-types-client": "typechain --target=web3-v1 'build/contracts/*.json'",
     "start": "react-scripts start",
     "build": "react-scripts build"
   },
@@ -30,6 +31,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.7.3",
+    "@typechain/web3-v1": "^6.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

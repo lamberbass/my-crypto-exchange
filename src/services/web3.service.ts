@@ -1,27 +1,28 @@
 import Web3 from 'web3';
-import Router from '../artifacts/Router.json';
-import ERC20Mock from '../artifacts/ERC20Mock.json';
+import RouterCompiled from '../artifacts/Router.json';
+import ERC20MockCompiled from '../artifacts/ERC20Mock.json';
 import Tokens from '../artifacts/deployed-tokens.json';
+import { ERC20Mock, Router } from '../../types/web3-v1-contracts';
+import { AbiItem } from "web3-utils";
 
 let web3: Web3;
 let currentAccount: string;
-let routerContract: any;
+let routerContract: Router;
+let routerAddress: string;
 
 type TokenAddresses = { [token: string]: string };
 export type TokenBalances = { [token: string]: string };
 export type AddLiquidityResponse = { amountA: string, amountB: string, liquidity: string };
 
 export async function getCurrentAccount(): Promise<string> {
-  const ethereum = (window as any).ethereum;
-
-  if (!ethereum || !ethereum.request) {
+  if (!window.ethereum || !window.ethereum.request) {
     throw new Error('Could not get connected accounts. Please install MetaMask.');
   }
 
-  web3 = new Web3(ethereum);
-  (window as any).web3 = web3;
+  web3 = new Web3(window.ethereum);
+  window.web3 = web3;
 
-  const accounts: string[] = await ethereum.request({
+  const accounts: string[] = await window.ethereum.request({
     method: 'eth_requestAccounts',
   });
 
@@ -32,35 +33,35 @@ export async function getCurrentAccount(): Promise<string> {
 export async function addLiquidity(
   tokenA: string,
   tokenB: string,
-  amountTokenA: string,
-  amountTokenB: string,
-  minAmountTokenA: string,
-  minAmountTokenB: string
+  amountA: number | string | BN,
+  amountB: number | string | BN,
+  minAmountA: number | string | BN,
+  minAmountB: number | string | BN
 ): Promise<AddLiquidityResponse> {
   if (!routerContract) {
     await initRouterContract();
   }
 
-  const contractTokenA = getContractOfToken(tokenA);
-  const contractTokenB = getContractOfToken(tokenB);
+  const contractTokenA: ERC20Mock = getContractOfToken(tokenA);
+  const contractTokenB: ERC20Mock = getContractOfToken(tokenB);
 
-  await contractTokenA.methods.approve(routerContract._address, amountTokenA).send({ from: currentAccount });
-  await contractTokenB.methods.approve(routerContract._address, amountTokenB).send({ from: currentAccount });
+  await contractTokenA.methods.approve(routerAddress, amountA).send({ from: currentAccount });
+  await contractTokenB.methods.approve(routerAddress, amountB).send({ from: currentAccount });
 
   const contractMethod = routerContract.methods.addLiquidity(
     tokenA,
     tokenB,
-    amountTokenA,
-    amountTokenB,
-    minAmountTokenA,
-    minAmountTokenB,
+    amountA,
+    amountB,
+    minAmountA,
+    minAmountB,
     currentAccount
   );
 
   const response: AddLiquidityResponse = await contractMethod.call({ from: currentAccount });
   console.log('addLiquidity response', response);
 
-  const receipt = await contractMethod.send({ from: currentAccount });
+  const receipt: TransactionReceipt = await contractMethod.send({ from: currentAccount });
   console.log('addLiquidity receipt', receipt);
 
   return response;
@@ -69,19 +70,19 @@ export async function addLiquidity(
 export async function swapExactTokensForTokens(
   tokenA: string,
   tokenB: string,
-  amountTokenA: string,
-  minAmountTokenB: string
+  amountA: number | string | BN,
+  minAmountB: number | string | BN
 ): Promise<string[]> {
   if (!routerContract) {
     await initRouterContract();
   }
 
-  const contractTokenA = getContractOfToken(tokenA);
-  await contractTokenA.methods.approve(routerContract._address, amountTokenA).send({ from: currentAccount });
+  const contractTokenA: ERC20Mock = getContractOfToken(tokenA);
+  await contractTokenA.methods.approve(routerAddress, amountA).send({ from: currentAccount });
 
   const contractMethod = routerContract.methods.swapExactTokensForTokens(
-    amountTokenA,
-    minAmountTokenB,
+    amountA,
+    minAmountB,
     [tokenA, tokenB],
     currentAccount
   );
@@ -89,7 +90,7 @@ export async function swapExactTokensForTokens(
   const response: string[] = await contractMethod.call({ from: currentAccount });
   console.log('swapExactTokensForTokens response', response);
 
-  const receipt = await contractMethod.send({ from: currentAccount });
+  const receipt: TransactionReceipt = await contractMethod.send({ from: currentAccount });
   console.log('swapExactTokensForTokens receipt', receipt);
 
   return response;
@@ -121,7 +122,7 @@ export async function getTokenBalances(): Promise<TokenBalances> {
   const tokens: string[] = Object.keys(tokenAddresses);
 
   const promises: Array<Promise<string>> = tokens.map((token: string) => {
-    const contract = getContractOfToken(tokenAddresses[token]);
+    const contract: ERC20Mock = getContractOfToken(tokenAddresses[token]);
     return contract.methods.balanceOf(currentAccount).call({ from: currentAccount });
   });
 
@@ -132,29 +133,33 @@ export async function getTokenBalances(): Promise<TokenBalances> {
       const token: string = tokens[index];
       return { ...result, [token]: balance }
     },
-    {} as { [token: string]: string }
+    {} as TokenAddresses
   );
 }
 
 async function initRouterContract(): Promise<void> {
   const networkId: number = await web3.eth.net.getId();
-  const routerInstance = (Router as any).networks[networkId];
-  if (!routerInstance) {
+  const deployedNetwork: any = (RouterCompiled.networks as any)[networkId];
+  if (!deployedNetwork) {
     throw new Error('Router contract not deployed to detected network.');
   }
 
-  routerContract = new web3.eth.Contract((Router as any).abi, routerInstance.address);
+  routerAddress = deployedNetwork.address;
+  routerContract = new web3.eth.Contract(
+    RouterCompiled.abi as AbiItem[],
+    routerAddress
+  ) as unknown as Router;
 }
 
 async function mintTokens(amountToMint: string, tokenAddresses: string[]): Promise<void> {
-  const promises: Array<Promise<string>> = tokenAddresses.map((address: string) => {
-    const contract = getContractOfToken(address);
+  const promises: Array<PromiEvent<TransactionReceipt>> = tokenAddresses.map((address: string) => {
+    const contract: ERC20Mock = getContractOfToken(address);
     return contract.methods.mint(amountToMint, currentAccount).send({ from: currentAccount })
   });
 
   await Promise.all(promises);
 }
 
-function getContractOfToken(tokenAddress: string) {
-  return new web3.eth.Contract((ERC20Mock as any).abi, tokenAddress);
+function getContractOfToken(tokenAddress: string): ERC20Mock {
+  return new web3.eth.Contract(ERC20MockCompiled.abi as AbiItem[], tokenAddress) as unknown as ERC20Mock;
 }
