@@ -1,14 +1,20 @@
 import Web3 from 'web3';
 import RouterCompiled from '../artifacts/Router.json';
 import ERC20MockCompiled from '../artifacts/ERC20Mock.json';
+import LibraryCompiled from '../artifacts/Library.json';
+import FactoryCompiled from '../artifacts/Factory.json';
+
 import Tokens from '../artifacts/deployed-tokens.json';
-import { ERC20Mock, Router } from '../../types/web3-v1-contracts';
+import { ERC20Mock, Library, Router } from '../../types/web3-v1-contracts';
 import { AbiItem } from "web3-utils";
 
 let web3: Web3;
 let currentAccount: string;
+
 let routerContract: Router;
 let routerAddress: string;
+
+let libraryContract: Library;
 
 type TokenAddresses = { [token: string]: string };
 export type TokenBalances = { [token: string]: string };
@@ -196,18 +202,70 @@ export async function getTokenBalances(): Promise<TokenBalances> {
   );
 }
 
-async function initRouterContract(): Promise<void> {
-  const networkId: number = await web3.eth.net.getId();
-  const deployedNetwork: any = (RouterCompiled.networks as any)[networkId];
-  if (!deployedNetwork) {
-    throw new Error('Router contract not deployed to detected network.');
+export async function getOutputAmount(
+  tokenA: string,
+  tokenB: string,
+  amountA: number | string | BN
+): Promise<string> {
+  if (!libraryContract) {
+    await initLibraryContract();
   }
 
-  routerAddress = deployedNetwork.address;
-  routerContract = new web3.eth.Contract(
-    RouterCompiled.abi as AbiItem[],
-    routerAddress
-  ) as unknown as Router;
+  const factoryAddress: string = await getContractAddress(FactoryCompiled);
+
+  const response: string[] = await libraryContract.methods.getAmountsOut(
+    factoryAddress,
+    amountA,
+    [tokenA, tokenB]
+  ).call({ from: currentAccount });
+
+  console.log('getOutputAmount response', response);
+  return response[response.length - 1];
+}
+
+export async function getInputAmount(
+  tokenA: string,
+  tokenB: string,
+  amountB: number | string | BN
+): Promise<string> {
+  if (!libraryContract) {
+    await initLibraryContract();
+  }
+
+  const factoryAddress: string = await getContractAddress(FactoryCompiled);
+
+  const response: string[] = await libraryContract.methods.getAmountsIn(
+    factoryAddress,
+    amountB,
+    [tokenA, tokenB]
+  ).call({ from: currentAccount });
+
+  console.log('getInputAmount response', response);
+  return response[0];
+}
+
+async function initRouterContract(): Promise<void> {
+  routerAddress = await getContractAddress(RouterCompiled);
+  routerContract = await getContract<Router>(RouterCompiled);
+}
+
+async function initLibraryContract(): Promise<void> {
+  libraryContract = await getContract<Library>(LibraryCompiled);
+}
+
+async function getContract<T>(contractJson: any): Promise<T> {
+  const address: string = await getContractAddress(contractJson);
+  return new web3.eth.Contract(contractJson.abi as AbiItem[], address) as unknown as T;
+}
+
+async function getContractAddress(contractJson: any): Promise<string> {
+  const networkId: number = await web3.eth.net.getId();
+  const deployedNetwork: any = contractJson.networks[networkId];
+  if (!deployedNetwork) {
+    throw new Error(`Contract ${contractJson.contractName} not deployed to detected network.`);
+  }
+
+  return deployedNetwork.address;
 }
 
 async function mintTokens(amountToMint: string, tokenAddresses: string[]): Promise<void> {

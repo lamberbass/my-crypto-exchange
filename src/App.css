@@ -1,11 +1,20 @@
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+}
+
+.App-form {
+  display: flex;
+  margin-top: 20px;
+}
+
+.App-form div, label {
+  margin: 10px;
+}
+
+.App-form input {
+  max-width: 50px;
 }
 
 .App-buttons {
@@ -13,6 +22,11 @@
   justify-content: space-between;
   flex-wrap: wrap;
   margin-top: 20px;
+}
+
+.App-buttons div {
+  display: flex;
+  flex-direction: column;
 }
 
 .App-buttons button {

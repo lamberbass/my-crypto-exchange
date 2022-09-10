@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import {
   addLiquidity,
   getCurrentAccount,
+  getInputAmount,
+  getOutputAmount,
   getTokenBalances,
   mintTokensWithZeroBalance,
   removeLiquidity,
@@ -14,9 +16,16 @@ import { eth } from './utils/amount-helper';
 
 function App() {
   const [currentAccount, setCurrentAccount] = useState('');
+  const [tokenA, setTokenA] = useState('ETH');
+  const [tokenB, setTokenB] = useState('USDC');
+  const [amountA, setAmountA] = useState('100');
+  const [amountB, setAmountB] = useState('100');
+  const [slippage, setSlippage] = useState(50);
 
-  const slippageTolerance: number = 50;
-  const getMinAmount = (amount: number): number => amount * (100 - slippageTolerance) / 100;
+  const tokens: string[] = Object.keys(Tokens);
+  const getTokenAddress = (tokenName: string) => (Tokens as { [key: string]: string })[tokenName]
+
+  const getMinAmount = (amount: number): number => amount * (100 - slippage) / 100;
 
   const connectWallet = async () => {
     const account: string = await getCurrentAccount();
@@ -26,66 +35,41 @@ function App() {
   useEffect(() => { connectWallet(); }, []);
 
   const addLiq = async () => {
-    const tokenA: string = Tokens.ETH;
-    const tokenB: string = Tokens.USDC;
-
-    const amountA: number = 100;
-    const amountB: number = 100;
-
     await addLiquidity(
-      tokenA,
-      tokenB,
+      getTokenAddress(tokenA),
+      getTokenAddress(tokenB),
       eth(amountA),
       eth(amountB),
-      eth(getMinAmount(amountA)),
-      eth(getMinAmount(amountB))
+      eth(getMinAmount(+amountA)),
+      eth(getMinAmount(+amountB))
     );
   };
 
   const removeLiq = async () => {
-    const tokenA: string = Tokens.ETH;
-    const tokenB: string = Tokens.USDC;
-
-    const liquidity: number = 100;
-    const minAmountA: number = 10;
-    const minAmountB: number = 10;
-
     await removeLiquidity(
-      tokenA,
-      tokenB,
-      eth(liquidity),
-      eth(minAmountA),
-      eth(minAmountB)
+      getTokenAddress(tokenA),
+      getTokenAddress(tokenB),
+      eth(100),
+      eth(10),
+      eth(10)
     );
   };
 
   const swap = async () => {
-    const tokenA: string = Tokens.ETH;
-    const tokenB: string = Tokens.USDC;
-
-    const amountA: number = 100;
-    const minAmountB: number = 50;
-
     await swapExactTokensForTokens(
-      tokenA,
-      tokenB,
+      getTokenAddress(tokenA),
+      getTokenAddress(tokenB),
       eth(amountA),
-      eth(minAmountB)
+      eth(amountA).mul(eth(0.5))
     );
   };
 
   const reverseSwap = async () => {
-    const tokenA: string = Tokens.ETH;
-    const tokenB: string = Tokens.USDC;
-
-    const amountB: number = 50;
-    const maxAmountA: number = 150;
-
     await swapTokensForExactTokens(
-      tokenA,
-      tokenB,
+      getTokenAddress(tokenA),
+      getTokenAddress(tokenB),
       eth(amountB),
-      eth(maxAmountA)
+      eth(amountB).mul(eth(2))
     );
   };
 
@@ -97,27 +81,82 @@ function App() {
     await mintTokensWithZeroBalance();
   };
 
+  const amountOut = async () => {
+    await getOutputAmount(
+      getTokenAddress(tokenA),
+      getTokenAddress(tokenB),
+      amountA
+    );
+  };
+
+  const amountIn = async () => {
+    await getInputAmount(
+      getTokenAddress(tokenA),
+      getTokenAddress(tokenB),
+      amountB
+    );
+  };
+
   return (
-    <div>
-      <header className="App-header">
-        <h1>Welcome to My Crypto Exchange!</h1>
+    <div className="App-header">
+      <h1 >Welcome to My Crypto Exchange!</h1>
 
-        {!currentAccount
-          ? <div>Connecting to Metamask wallet...</div>
-          : <div>Selected Account: <span>{currentAccount}</span></div>
-        }
+      {!currentAccount
+        ? <div>Connecting to Metamask wallet...</div>
+        : <div>Selected Account: <span>{currentAccount}</span></div>
+      }
 
-        <div className="App-buttons">
-          <button type="button" onClick={getBalances}>Get balances</button>
-          <button type="button" onClick={mint}>Mint tokens with zero balance</button>
-          <button type="button" onClick={addLiq}>Add liquidity</button>
-          <button type="button" onClick={removeLiq}>Remove liquidity</button>
-          <button type="button" onClick={swap}>Swap exact tokens for tokens</button>
-          <button type="button" onClick={reverseSwap}>Swap tokens for exact tokens</button>
+      <div className="App-form">
+        <div>
+          <label>Token A</label>
+          <select name="tokens" id="tokens" defaultValue={tokenA} onChange={e => setTokenA(e.target.value)}>
+            {tokens.map(token => <option key={token} value={token}>{token}</option>)}
+          </select>
         </div>
 
-        <img src="mule.svg" className="App-logo" alt="logo" />
-      </header>
+        <div>
+          <label>Token B</label>
+          <select name="tokens" id="tokens" defaultValue={tokenB} onChange={e => setTokenB(e.target.value)}>
+            {tokens.map(token => <option key={token} value={token}>{token}</option>)}
+          </select>
+        </div>
+
+        <div>
+          <label>Amount A</label>
+          <input type="text" value={amountA} onChange={e => setAmountA(e.target.value)}></input>
+        </div>
+
+        <div>
+          <label>Amount B</label>
+          <input type="text" value={amountB} onChange={e => setAmountB(e.target.value)}></input>
+        </div>
+
+        <div>
+          <label>Slippage %</label>
+          <input type="text" value={slippage} onChange={e => setSlippage(+e.target.value)}></input>
+        </div>
+      </div>
+
+      <div className="App-buttons">
+        <div>
+          <button type="button" className="round-button" onClick={getBalances}>Get balances</button>
+          <button type="button" className="round-button" onClick={mint}>Mint tokens with zero balance</button>
+        </div>
+        <div>
+          <button type="button" className="round-button" onClick={addLiq}>Add liquidity</button>
+          <button type="button" className="round-button" onClick={removeLiq}>Remove liquidity</button>
+        </div>
+        <div>
+          <button type="button" className="round-button" onClick={amountOut}>Get output amount</button>
+          <button type="button" className="round-button" onClick={swap}>Swap exact tokens for tokens</button>
+        </div>
+        <div>
+          <button type="button" className="round-button" onClick={amountIn}>Get input amount</button>
+          <button type="button" className="round-button" onClick={reverseSwap}>Swap tokens for exact tokens</button>
+        </div>
+      </div>
+
+      <img src="mule.svg" className="App-logo" alt="logo" />
     </div>
   );
 }
