@@ -1,6 +1,14 @@
 import './App.css';
 import { useEffect, useState } from 'react';
-import { addLiquidity, getCurrentAccount, getTokenBalances, mintTokensWithZeroBalance, swapExactTokensForTokens } from './services/web3.service';
+import {
+  addLiquidity,
+  getCurrentAccount,
+  getTokenBalances,
+  mintTokensWithZeroBalance,
+  removeLiquidity,
+  swapExactTokensForTokens,
+  swapTokensForExactTokens
+} from './services/web3.service';
 import Tokens from './artifacts/deployed-tokens.json';
 import { eth } from './utils/amount-helper';
 
@@ -30,7 +38,24 @@ function App() {
       eth(amountA),
       eth(amountB),
       eth(getMinAmount(amountA)),
-      eth(getMinAmount(amountB)),
+      eth(getMinAmount(amountB))
+    );
+  };
+
+  const removeLiq = async () => {
+    const tokenA: string = Tokens.ETH;
+    const tokenB: string = Tokens.USDC;
+
+    const liquidity: number = 100;
+    const minAmountA: number = 10;
+    const minAmountB: number = 10;
+
+    await removeLiquidity(
+      tokenA,
+      tokenB,
+      eth(liquidity),
+      eth(minAmountA),
+      eth(minAmountB)
     );
   };
 
@@ -46,6 +71,21 @@ function App() {
       tokenB,
       eth(amountA),
       eth(minAmountB)
+    );
+  };
+
+  const reverseSwap = async () => {
+    const tokenA: string = Tokens.ETH;
+    const tokenB: string = Tokens.USDC;
+
+    const amountB: number = 50;
+    const maxAmountA: number = 150;
+
+    await swapTokensForExactTokens(
+      tokenA,
+      tokenB,
+      eth(amountB),
+      eth(maxAmountA)
     );
   };
 
@@ -71,7 +111,9 @@ function App() {
           <button type="button" onClick={getBalances}>Get balances</button>
           <button type="button" onClick={mint}>Mint tokens with zero balance</button>
           <button type="button" onClick={addLiq}>Add liquidity</button>
+          <button type="button" onClick={removeLiq}>Remove liquidity</button>
           <button type="button" onClick={swap}>Swap exact tokens for tokens</button>
+          <button type="button" onClick={reverseSwap}>Swap tokens for exact tokens</button>
         </div>
 
         <img src="mule.svg" className="App-logo" alt="logo" />

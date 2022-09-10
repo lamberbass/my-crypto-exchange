@@ -13,6 +13,7 @@ let routerAddress: string;
 type TokenAddresses = { [token: string]: string };
 export type TokenBalances = { [token: string]: string };
 export type AddLiquidityResponse = { amountA: string, amountB: string, liquidity: string };
+export type RemoveLiquidityResponse = { amountA: string, amountB: string };
 
 export async function getCurrentAccount(): Promise<string> {
   if (!window.ethereum || !window.ethereum.request) {
@@ -67,6 +68,35 @@ export async function addLiquidity(
   return response;
 }
 
+export async function removeLiquidity(
+  tokenA: string,
+  tokenB: string,
+  liquidity: number | string | BN,
+  minAmountA: number | string | BN,
+  minAmountB: number | string | BN
+): Promise<RemoveLiquidityResponse> {
+  if (!routerContract) {
+    await initRouterContract();
+  }
+
+  const contractMethod = routerContract.methods.removeLiquidity(
+    tokenA,
+    tokenB,
+    liquidity,
+    minAmountA,
+    minAmountB,
+    currentAccount
+  );
+
+  const response: RemoveLiquidityResponse = await contractMethod.call({ from: currentAccount });
+  console.log('removeLiquidity response', response);
+
+  const receipt: TransactionReceipt = await contractMethod.send({ from: currentAccount });
+  console.log('removeLiquidity receipt', receipt);
+
+  return response;
+}
+
 export async function swapExactTokensForTokens(
   tokenA: string,
   tokenB: string,
@@ -92,6 +122,35 @@ export async function swapExactTokensForTokens(
 
   const receipt: TransactionReceipt = await contractMethod.send({ from: currentAccount });
   console.log('swapExactTokensForTokens receipt', receipt);
+
+  return response;
+}
+
+export async function swapTokensForExactTokens(
+  tokenA: string,
+  tokenB: string,
+  amountB: number | string | BN,
+  maxAmountA: number | string | BN
+): Promise<string[]> {
+  if (!routerContract) {
+    await initRouterContract();
+  }
+
+  const contractTokenA: ERC20Mock = getContractOfToken(tokenA);
+  await contractTokenA.methods.approve(routerAddress, maxAmountA).send({ from: currentAccount });
+
+  const contractMethod = routerContract.methods.swapTokensForExactTokens(
+    amountB,
+    maxAmountA,
+    [tokenA, tokenB],
+    currentAccount
+  );
+
+  const response: string[] = await contractMethod.call({ from: currentAccount });
+  console.log('swapTokensForExactTokens response', response);
+
+  const receipt: TransactionReceipt = await contractMethod.send({ from: currentAccount });
+  console.log('swapTokensForExactTokens receipt', receipt);
 
   return response;
 }
