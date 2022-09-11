@@ -4,43 +4,18 @@
   align-items: center;
 }
 
-.App-form {
-  display: flex;
-  align-items: center;
-  margin-top: 20px;
-}
-
-.App-form div, label {
-  margin: 10px;
-  vertical-align: middle;
-}
-
-.App-form input {
-  max-width: 50px;
-}
-
-.App-price {
-  margin-top: 20px;
-}
-
 .App-buttons {
   display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
+  flex-direction: column;
   margin-top: 20px;
 }
 
 .App-buttons div {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .App-buttons button {
   margin: 10px;
-}
-
-.App-logo {
-  margin-top: 50px;
-  width: 25vw;
-  filter: invert(1);
 }

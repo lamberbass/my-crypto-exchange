@@ -1,0 +1,30 @@
+.Pair-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.Pair-content input {
+  max-width: 50px;
+}
+
+.Pair-token {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Pair-token div,
+label {
+  margin: 10px;
+  vertical-align: middle;
+}
+
+.Pair-price {
+  margin-top: 20px;
+}
+
+.Pair-slip {
+  margin-top: 10px;
+}
