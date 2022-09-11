@@ -12,18 +12,17 @@ import {
   swapTokensForExactTokens
 } from './services/web3.service';
 import Tokens from './artifacts/deployed-tokens.json';
-import { eth } from './utils/amount-helper';
+import { eth, wei } from './utils/amount-helper';
 
 function App() {
   const [currentAccount, setCurrentAccount] = useState('');
   const [tokenA, setTokenA] = useState('ETH');
   const [tokenB, setTokenB] = useState('USDC');
-  const [amountA, setAmountA] = useState('100');
-  const [amountB, setAmountB] = useState('100');
+  const [amountA, setAmountA] = useState('1');
+  const [amountB, setAmountB] = useState('1');
   const [slippage, setSlippage] = useState(50);
 
   const tokens: string[] = Object.keys(Tokens);
-  const getTokenAddress = (tokenName: string) => (Tokens as { [key: string]: string })[tokenName]
 
   const getMinAmount = (amount: number): number => amount * (100 - slippage) / 100;
 
@@ -36,40 +35,40 @@ function App() {
 
   const addLiq = async () => {
     await addLiquidity(
-      getTokenAddress(tokenA),
-      getTokenAddress(tokenB),
-      eth(amountA),
-      eth(amountB),
-      eth(getMinAmount(+amountA)),
-      eth(getMinAmount(+amountB))
+      tokenA,
+      tokenB,
+      eth(amountA).toString(),
+      eth(amountB).toString(),
+      eth(getMinAmount(+amountA)).toString(),
+      eth(getMinAmount(+amountB)).toString()
     );
   };
 
   const removeLiq = async () => {
     await removeLiquidity(
-      getTokenAddress(tokenA),
-      getTokenAddress(tokenB),
-      eth(100),
-      eth(10),
-      eth(10)
+      tokenA,
+      tokenB,
+      eth(100).sub(wei(1000)).toString(),
+      eth(10).toString(),
+      eth(10).toString()
     );
   };
 
   const swap = async () => {
     await swapExactTokensForTokens(
-      getTokenAddress(tokenA),
-      getTokenAddress(tokenB),
-      eth(amountA),
-      eth(amountA).mul(eth(0.5))
+      tokenA,
+      tokenB,
+      eth(amountA).toString(),
+      eth(amountA).mul(eth(0.5)).toString()
     );
   };
 
   const reverseSwap = async () => {
     await swapTokensForExactTokens(
-      getTokenAddress(tokenA),
-      getTokenAddress(tokenB),
-      eth(amountB),
-      eth(amountB).mul(eth(2))
+      tokenA,
+      tokenB,
+      eth(amountB).toString(),
+      eth(amountB).mul(eth(2)).toString()
     );
   };
 
@@ -83,17 +82,17 @@ function App() {
 
   const amountOut = async () => {
     await getOutputAmount(
-      getTokenAddress(tokenA),
-      getTokenAddress(tokenB),
-      amountA
+      tokenA,
+      tokenB,
+      eth(amountA).toString()
     );
   };
 
   const amountIn = async () => {
     await getInputAmount(
-      getTokenAddress(tokenA),
-      getTokenAddress(tokenB),
-      amountB
+      tokenA,
+      tokenB,
+      eth(amountB).toString()
     );
   };
 
@@ -110,14 +109,14 @@ function App() {
         <div>
           <label>Token A</label>
           <select name="tokens" id="tokens" defaultValue={tokenA} onChange={e => setTokenA(e.target.value)}>
-            {tokens.map(token => <option key={token} value={token}>{token}</option>)}
+            {tokens.filter(token => token !== tokenB).map(token => <option key={token} value={token}>{token}</option>)}
           </select>
         </div>
 
         <div>
           <label>Token B</label>
           <select name="tokens" id="tokens" defaultValue={tokenB} onChange={e => setTokenB(e.target.value)}>
-            {tokens.map(token => <option key={token} value={token}>{token}</option>)}
+            {tokens.filter(token => token !== tokenA).map(token => <option key={token} value={token}>{token}</option>)}
           </select>
         </div>
 

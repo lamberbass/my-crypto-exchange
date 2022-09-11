@@ -7,19 +7,21 @@ import FactoryCompiled from '../artifacts/Factory.json';
 import Tokens from '../artifacts/deployed-tokens.json';
 import { ERC20Mock, Library, Router } from '../../types/web3-v1-contracts';
 import { AbiItem } from "web3-utils";
+import { eth } from '../utils/amount-helper';
+
+export type TokenBalances = { [token: string]: string };
+export type AddLiquidityResponse = { amountA: string, amountB: string, liquidity: string };
+export type RemoveLiquidityResponse = { amountA: string, amountB: string };
+
+type TokenAddresses = { [token: string]: string };
+const tokenAddresses: TokenAddresses = Tokens;
 
 let web3: Web3;
 let currentAccount: string;
 
+let libraryContract: Library;
 let routerContract: Router;
 let routerAddress: string;
-
-let libraryContract: Library;
-
-type TokenAddresses = { [token: string]: string };
-export type TokenBalances = { [token: string]: string };
-export type AddLiquidityResponse = { amountA: string, amountB: string, liquidity: string };
-export type RemoveLiquidityResponse = { amountA: string, amountB: string };
 
 export async function getCurrentAccount(): Promise<string> {
   if (!window.ethereum || !window.ethereum.request) {
@@ -49,15 +51,15 @@ export async function addLiquidity(
     await initRouterContract();
   }
 
-  const contractTokenA: ERC20Mock = getContractOfToken(tokenA);
-  const contractTokenB: ERC20Mock = getContractOfToken(tokenB);
+  const contractTokenA: ERC20Mock = getContractOfToken(tokenAddresses[tokenA]);
+  const contractTokenB: ERC20Mock = getContractOfToken(tokenAddresses[tokenB]);
 
   await contractTokenA.methods.approve(routerAddress, amountA).send({ from: currentAccount });
   await contractTokenB.methods.approve(routerAddress, amountB).send({ from: currentAccount });
 
   const contractMethod = routerContract.methods.addLiquidity(
-    tokenA,
-    tokenB,
+    tokenAddresses[tokenA],
+    tokenAddresses[tokenB],
     amountA,
     amountB,
     minAmountA,
@@ -65,6 +67,7 @@ export async function addLiquidity(
     currentAccount
   );
 
+  console.log('addLiquidity request', { tokenA, tokenB, amountA, amountB, minAmountA, minAmountB });
   const response: AddLiquidityResponse = await contractMethod.call({ from: currentAccount });
   console.log('addLiquidity response', response);
 
@@ -86,14 +89,15 @@ export async function removeLiquidity(
   }
 
   const contractMethod = routerContract.methods.removeLiquidity(
-    tokenA,
-    tokenB,
+    tokenAddresses[tokenA],
+    tokenAddresses[tokenB],
     liquidity,
     minAmountA,
     minAmountB,
     currentAccount
   );
 
+  console.log('removeLiquidity request', { tokenA, tokenB, liquidity, minAmountA, minAmountB });
   const response: RemoveLiquidityResponse = await contractMethod.call({ from: currentAccount });
   console.log('removeLiquidity response', response);
 
@@ -113,16 +117,20 @@ export async function swapExactTokensForTokens(
     await initRouterContract();
   }
 
-  const contractTokenA: ERC20Mock = getContractOfToken(tokenA);
+  const contractTokenA: ERC20Mock = getContractOfToken(tokenAddresses[tokenA]);
   await contractTokenA.methods.approve(routerAddress, amountA).send({ from: currentAccount });
 
   const contractMethod = routerContract.methods.swapExactTokensForTokens(
     amountA,
     minAmountB,
-    [tokenA, tokenB],
+    [
+      tokenAddresses[tokenA],
+      tokenAddresses[tokenB]
+    ],
     currentAccount
   );
 
+  console.log('swapExactTokensForTokens request', { tokenA, tokenB, amountA, minAmountB });
   const response: string[] = await contractMethod.call({ from: currentAccount });
   console.log('swapExactTokensForTokens response', response);
 
@@ -142,16 +150,20 @@ export async function swapTokensForExactTokens(
     await initRouterContract();
   }
 
-  const contractTokenA: ERC20Mock = getContractOfToken(tokenA);
+  const contractTokenA: ERC20Mock = getContractOfToken(tokenAddresses[tokenA]);
   await contractTokenA.methods.approve(routerAddress, maxAmountA).send({ from: currentAccount });
 
   const contractMethod = routerContract.methods.swapTokensForExactTokens(
     amountB,
     maxAmountA,
-    [tokenA, tokenB],
+    [
+      tokenAddresses[tokenA],
+      tokenAddresses[tokenB]
+    ],
     currentAccount
   );
 
+  console.log('swapTokensForExactTokens request', { tokenA, tokenB, amountB, maxAmountA });
   const response: string[] = await contractMethod.call({ from: currentAccount });
   console.log('swapTokensForExactTokens response', response);
 
@@ -165,11 +177,10 @@ export async function mintTokensWithZeroBalance(): Promise<void> {
   let balances: TokenBalances = await getTokenBalances();
   console.log('balances before minting', balances);
 
-  const amountToMint: string = web3.utils.toWei('1000', 'ether');
-  const tokenAddresses: TokenAddresses = Tokens;
+  const amountToMint: BN = eth(1000);
 
   const addressesToMint: string[] = Object.keys(tokenAddresses)
-    .filter((token: string) => web3.utils.toBN(balances[token]).isZero())
+    .filter((token: string) => eth(balances[token]).isZero())
     .map((token: string) => tokenAddresses[token]);
 
   if (addressesToMint.length === 0) {
@@ -183,7 +194,6 @@ export async function mintTokensWithZeroBalance(): Promise<void> {
 }
 
 export async function getTokenBalances(): Promise<TokenBalances> {
-  const tokenAddresses: TokenAddresses = Tokens;
   const tokens: string[] = Object.keys(tokenAddresses);
 
   const promises: Array<Promise<string>> = tokens.map((token: string) => {
@@ -213,10 +223,15 @@ export async function getOutputAmount(
 
   const factoryAddress: string = await getContractAddress(FactoryCompiled);
 
+  console.log('getOutputAmount request', { tokenA, tokenB, amountA });
+
   const response: string[] = await libraryContract.methods.getAmountsOut(
     factoryAddress,
     amountA,
-    [tokenA, tokenB]
+    [
+      tokenAddresses[tokenA],
+      tokenAddresses[tokenB]
+    ]
   ).call({ from: currentAccount });
 
   console.log('getOutputAmount response', response);
@@ -234,10 +249,15 @@ export async function getInputAmount(
 
   const factoryAddress: string = await getContractAddress(FactoryCompiled);
 
+  console.log('getInputAmount request', { tokenA, tokenB, amountB });
+
   const response: string[] = await libraryContract.methods.getAmountsIn(
     factoryAddress,
     amountB,
-    [tokenA, tokenB]
+    [
+      tokenAddresses[tokenA],
+      tokenAddresses[tokenB]
+    ]
   ).call({ from: currentAccount });
 
   console.log('getInputAmount response', response);
@@ -268,7 +288,7 @@ async function getContractAddress(contractJson: any): Promise<string> {
   return deployedNetwork.address;
 }
 
-async function mintTokens(amountToMint: string, tokenAddresses: string[]): Promise<void> {
+async function mintTokens(amountToMint: number | string | BN, tokenAddresses: string[]): Promise<void> {
   const promises: Array<PromiEvent<TransactionReceipt>> = tokenAddresses.map((address: string) => {
     const contract: ERC20Mock = getContractOfToken(address);
     return contract.methods.mint(amountToMint, currentAccount).send({ from: currentAccount })
