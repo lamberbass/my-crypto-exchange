@@ -1,19 +1,11 @@
 import './App.css';
 import { useCallback, useEffect, useState } from 'react';
-import {
-  addLiquidity,
-  getCurrentAccount,
-  getInputAmount,
-  getOutputAmount,
-  getPrice,
-  getTokenBalances,
-  mintTokensWithZeroBalance,
-  removeLiquidity,
-  swapExactTokensForTokens,
-  swapTokensForExactTokens
-} from './services/web3.service';
+import { getCurrentAccount } from './services/web3.service';
 import Tokens from './artifacts/deployed-tokens.json';
 import { eth, wei } from './utils/amount-helper';
+import { addLiquidity, getPrice, removeLiquidity } from './services/liquidity.service';
+import { getTokenBalances, mintTokensWithZeroBalance } from './services/tokens.service';
+import { swapExactTokensForTokens, swapTokensForExactTokens, getOutputAmount, getInputAmount } from './services/swap.service';
 
 function App() {
   const [currentAccount, setCurrentAccount] = useState('');
