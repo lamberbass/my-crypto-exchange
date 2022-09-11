@@ -1,10 +1,11 @@
 import './App.css';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   addLiquidity,
   getCurrentAccount,
   getInputAmount,
   getOutputAmount,
+  getPrice,
   getTokenBalances,
   mintTokensWithZeroBalance,
   removeLiquidity,
@@ -21,6 +22,7 @@ function App() {
   const [amountA, setAmountA] = useState('1');
   const [amountB, setAmountB] = useState('1');
   const [slippage, setSlippage] = useState(50);
+  const [price, setPrice] = useState('');
 
   const tokens: string[] = Object.keys(Tokens);
 
@@ -31,7 +33,16 @@ function App() {
     setCurrentAccount(account);
   };
 
+  const getRatio = useCallback(
+    async () => {
+      const price: string = await getPrice(tokenA, tokenB);
+      setPrice(price);
+    },
+    [tokenA, tokenB]
+  );
+
   useEffect(() => { connectWallet(); }, []);
+  useEffect(() => { getRatio() }, [tokenA, tokenB, getRatio]);
 
   const addLiq = async () => {
     await addLiquidity(
@@ -134,6 +145,10 @@ function App() {
           <label>Slippage %</label>
           <input type="text" value={slippage} onChange={e => setSlippage(+e.target.value)}></input>
         </div>
+      </div>
+
+      <div className="App-price">
+        1 {tokenB} = {price} {tokenA}
       </div>
 
       <div className="App-buttons">

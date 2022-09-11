@@ -12,6 +12,7 @@ import { eth } from '../utils/amount-helper';
 export type TokenBalances = { [token: string]: string };
 export type AddLiquidityResponse = { amountA: string, amountB: string, liquidity: string };
 export type RemoveLiquidityResponse = { amountA: string, amountB: string };
+export type GetReservesResponse = { reserveA: string, reserveB: string };
 
 type TokenAddresses = { [token: string]: string };
 const tokenAddresses: TokenAddresses = Tokens;
@@ -210,6 +211,51 @@ export async function getTokenBalances(): Promise<TokenBalances> {
     },
     {} as TokenAddresses
   );
+}
+
+export async function getPrice(
+  tokenA: string,
+  tokenB: string,
+): Promise<string> {
+  if (!libraryContract) {
+    await initLibraryContract();
+  }
+
+  const reserves: GetReservesResponse = await getReserves(tokenA, tokenB);
+
+  console.log('quote request', { tokenA, tokenB });
+
+  const response = await libraryContract.methods.quote(
+    eth(1),
+    reserves.reserveB,
+    reserves.reserveA
+  ).call({ from: currentAccount });
+
+  console.log('quote response', response);
+
+  return web3.utils.fromWei(response, 'ether');
+}
+
+export async function getReserves(
+  tokenA: string,
+  tokenB: string,
+): Promise<GetReservesResponse> {
+  if (!libraryContract) {
+    await initLibraryContract();
+  }
+
+  const factoryAddress: string = await getContractAddress(FactoryCompiled);
+
+  console.log('getReserves request', { tokenA, tokenB });
+
+  const response: GetReservesResponse = await libraryContract.methods.getReserves(
+    factoryAddress,
+    tokenAddresses[tokenA],
+    tokenAddresses[tokenB]
+  ).call({ from: currentAccount });
+
+  console.log('getReserves response', response);
+  return response;
 }
 
 export async function getOutputAmount(

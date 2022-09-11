@@ -19,6 +19,10 @@
   max-width: 50px;
 }
 
+.App-price {
+  margin-top: 20px;
+}
+
 .App-buttons {
   display: flex;
   justify-content: space-between;
