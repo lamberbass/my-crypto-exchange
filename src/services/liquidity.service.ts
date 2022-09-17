@@ -104,7 +104,7 @@ export async function getPrice(
 
   console.log('quote response', response);
 
-  return web3.utils.fromWei(response, 'ether');
+  return response;
 }
 
 export async function getReserves(

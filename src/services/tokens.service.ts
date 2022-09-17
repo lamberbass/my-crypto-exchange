@@ -12,10 +12,7 @@ export const tokenAddresses: TokenAddresses = Tokens;
 export async function getTokenBalances(): Promise<TokenBalances> {
   const tokens: string[] = Object.keys(tokenAddresses);
 
-  const promises: Array<Promise<string>> = tokens.map((token: string) => {
-    const contract: ERC20Mock = getContractOfToken(tokenAddresses[token]);
-    return contract.methods.balanceOf(currentAccount).call({ from: currentAccount });
-  });
+  const promises: Array<Promise<string>> = tokens.map((token: string) => getTokenBalance(token));
 
   const balancesArray: string[] = await Promise.all(promises);
 
@@ -26,6 +23,14 @@ export async function getTokenBalances(): Promise<TokenBalances> {
     },
     {} as TokenBalances
   );
+}
+
+export async function getTokenBalance(token: string): Promise<string> {
+  const contract: ERC20Mock = getContractOfToken(tokenAddresses[token]);
+  const balance: string = await contract.methods.balanceOf(currentAccount).call({ from: currentAccount });
+  console.log(`Balance of token ${token}:`, balance);
+  return balance
+
 }
 
 export async function mintTokensWithZeroBalance(): Promise<void> {

@@ -12,3 +12,7 @@ export function wei(amount: number | string): BN {
 
   return web3.utils.toBN(web3.utils.toWei(amount, 'wei'));
 }
+
+export function ethString(wei: string) : string {
+  return web3.utils.fromWei(wei, 'ether');
+}

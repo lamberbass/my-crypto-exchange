@@ -8,9 +8,9 @@ function Liquidity() {
   const [tokenB, setTokenB] = useState('USDC');
   const [amountA, setAmountA] = useState('100');
   const [amountB, setAmountB] = useState('100');
-  const [slippage, setSlippage] = useState(50);
+  const [slippage, setSlippage] = useState('50');
 
-  const getMinAmount = (amount: number): number => amount * (100 - slippage) / 100;
+  const getMinAmount = (amount: number): number => amount * (100 - +slippage) / 100;
 
   const addLiq = async () => {
     await addLiquidity(
@@ -48,10 +48,10 @@ function Liquidity() {
         setSlippage={setSlippage}
       />
 
-      <div className="App-buttons">
-        <div>
-          <button type="button" className="btn-default" onClick={addLiq}>Add liquidity</button>
-          <button type="button" className="btn-default" onClick={removeLiq}>Remove liquidity</button>
+      <div className="flex flex-col mt-5">
+        <div className="flex justify-center items-center">
+          <button type="button" className="btn-default m-2.5" onClick={addLiq}>Add liquidity</button>
+          <button type="button" className="btn-default m-2.5" onClick={removeLiq}>Remove liquidity</button>
         </div>
       </div>
     </div>

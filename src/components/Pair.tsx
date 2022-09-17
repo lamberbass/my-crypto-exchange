@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
-import Tokens from '../artifacts/deployed-tokens.json';
+import { useState } from 'react';
 import { getPrice } from '../services/liquidity.service';
-import './Pair.css';
+import Token from './Token';
+import Tokens from '../artifacts/deployed-tokens.json';
+import { ethString } from '../utils/amount-helper';
+import { useDebouncedEffect } from '../utils/debounce';
 
 export type PairProps = {
   tokenA: string,
@@ -12,68 +14,70 @@ export type PairProps = {
   setAmountA: (amount: string) => void,
   amountB: string,
   setAmountB: (amount: string) => void,
-  slippage: number,
-  setSlippage: (slippage: number) => void
+  slippage: string,
+  setSlippage: (slippage: string) => void
 }
 
 function Pair(props: PairProps) {
-  const [tokenA, setTokenA] = [props.tokenA, props.setTokenA];
-  const [tokenB, setTokenB] = [props.tokenB, props.setTokenB];
-  const [amountA, setAmountA] = [props.amountA, props.setAmountA];
-  const [amountB, setAmountB] = [props.amountB, props.setAmountB];
-  const [slippage, setSlippage] = [props.slippage, props.setSlippage];
+  const tokens: string[] = Object.keys(Tokens);
 
   const [price, setPrice] = useState('');
 
-  const tokens: string[] = Object.keys(Tokens);
+  const getRatio = async () => {
+    const price: string = await getPrice(props.tokenA, props.tokenB);
+    setPrice(ethString(price));
+  }
 
-  const getRatio = useCallback(
-    async () => {
-      const price: string = await getPrice(tokenA, tokenB);
-      setPrice(price);
-    },
-    [tokenA, tokenB]
-  );
+  useDebouncedEffect(getRatio, [props.tokenA, props.tokenB], 500);
 
-  useEffect(() => { getRatio() }, [tokenA, tokenB, getRatio]);
+
+  const swapPair = () => {
+    const tokenA: string = props.tokenA;
+    const amountA: string = props.amountA;
+
+    props.setTokenA(props.tokenB);
+    props.setTokenB(tokenA);
+    props.setAmountB(amountA);
+  }
 
   return (
-    <div className="Pair-content">
-      <div className="Pair-token">
-        <div>
-          <label className="form-label">Amount A</label>
-          <input className="form-input" type="text" value={amountA} onChange={e => setAmountA(e.target.value)}></input>
-        </div>
+    <div className="relative flex flex-col w-full">
+      <Token
+        token={props.tokenA}
+        setToken={props.setTokenA}
+        amount={props.amountA}
+        setAmount={props.setAmountA}
+        tokens={tokens.filter(t => t !== props.tokenB)}
+      />
 
-        <div>
-          <select className="form-input" name="tokens" id="tokens" defaultValue={tokenA} onChange={e => setTokenA(e.target.value)}>
-            {tokens.filter(token => token !== tokenB).map(token => <option key={token} value={token}>{token}</option>)}
-          </select>
-          <label className="form-label">Token A</label>
-        </div>
+      <div
+        className="absolute top-20 left-2/4 bg-gray-800 rounded-lg p-0.5 border border-4 border-dark-gray cursor-pointer"
+        onClick={swapPair}>
+        <img src="arrow.svg" alt="v" />
       </div>
 
-      <div className="Pair-token">
-        <div>
-          <label className="form-label">Amount B</label>
-          <input className="form-input" type="text" value={amountB} onChange={e => setAmountB(e.target.value)}></input>
-        </div>
-
-        <div>
-          <select className="form-input" name="tokens" id="tokens" defaultValue={tokenB} onChange={e => setTokenB(e.target.value)}>
-            {tokens.filter(token => token !== tokenA).map(token => <option key={token} value={token}>{token}</option>)}
-          </select>
-          <label className="form-label">Token B</label>
-        </div>
+      <div className="mt-1">
+        <Token
+          token={props.tokenB}
+          setToken={props.setTokenB}
+          amount={props.amountB}
+          setAmount={props.setAmountB}
+          tokens={tokens.filter(t => t !== props.tokenA)}
+        />
       </div>
 
-      <div className="Pair-price">
-        1 {tokenB} = {price} {tokenA}
+      <div className="mt-5">
+        1 {props.tokenB} = {price} {props.tokenA}
       </div>
 
-      <div className="Pair-slip">
-        <label className="form-label">Slippage Tolerance</label>
-        <input className="form-input" type="text" value={slippage} onChange={e => setSlippage(+e.target.value)}></input>
+      <div className="mt-2 flex items-center">
+        <label>Slippage Tolerance</label>
+        <input
+          className="mx-2 p-2 form-input w-12 h-6 text-md"
+          type="text"
+          value={props.slippage}
+          onChange={e => props.setSlippage(e.target.value)}
+        />
         <span>%</span>
       </div>
     </div>

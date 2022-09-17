@@ -4,6 +4,8 @@ import { getCurrentAccount } from './services/web3.service';
 import { getTokenBalances, mintTokensWithZeroBalance } from './services/tokens.service';
 import Swap from './components/Swap';
 import Liquidity from './components/Liquidity';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const [currentAccount, setCurrentAccount] = useState('');
@@ -29,7 +31,20 @@ function App() {
 
   return (
     <div>
-      <div className="App-header">
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme='dark'
+      />
+
+      <div className="flex flex-col items-center">
         <h1 className="text-4xl font-bold mb-3 mt-6">Welcome to My Crypto Exchange!</h1>
         {
           !currentAccount
@@ -38,14 +53,14 @@ function App() {
         }
       </div>
 
-      <div className="App-buttons">
-        <div>
-          <button type="button" className="btn-default hidden" onClick={getBalances}>Get balances</button>
-          <button type="button" className="btn-default hidden" onClick={mint}>Mint tokens with zero balance</button>
+      <div className="flex flex-col mt-5">
+        <div className="flex justify-center items-center">
+          <button type="button" className="btn-default hidden m-2.5" onClick={getBalances}>Get balances</button>
+          <button type="button" className="btn-default hidden m-2.5" onClick={mint}>Mint tokens with zero balance</button>
         </div>
 
-        <div>
-          <ul className="grid gap-6 w-6/12 md:grid-cols-2">
+        <div className="flex justify-center text-center">
+          <ul className="grid gap-6 w-4/12 md:grid-cols-2">
             <li>
               <input type="radio" name="mode" id="swap" value="swap" className="hidden peer"
                 checked={showSwap === true} onChange={() => setShowSwap(true)} />
@@ -70,7 +85,7 @@ function App() {
           ? <Swap></Swap>
           : showSwap === false
             ? <Liquidity></Liquidity>
-            : <img src="mule.svg" className="App-logo" alt="logo" />
+            : ''
       }
     </div>
   );
