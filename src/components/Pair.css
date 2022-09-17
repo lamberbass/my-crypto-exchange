@@ -5,8 +5,8 @@
   margin-top: 20px;
 }
 
-.Pair-content input {
-  max-width: 50px;
+.Pair-content input, select {
+  width: 100px;
 }
 
 .Pair-token {
@@ -27,4 +27,8 @@ label {
 
 .Pair-slip {
   margin-top: 10px;
+}
+
+.Pair-slip input {
+  width: 50px;
 }

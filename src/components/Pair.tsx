@@ -41,29 +41,29 @@ function Pair(props: PairProps) {
     <div className="Pair-content">
       <div className="Pair-token">
         <div>
-          <label>Amount A</label>
-          <input type="text" value={amountA} onChange={e => setAmountA(e.target.value)}></input>
+          <label className="form-label">Amount A</label>
+          <input className="form-input" type="text" value={amountA} onChange={e => setAmountA(e.target.value)}></input>
         </div>
 
         <div>
-          <select name="tokens" id="tokens" defaultValue={tokenA} onChange={e => setTokenA(e.target.value)}>
+          <select className="form-input" name="tokens" id="tokens" defaultValue={tokenA} onChange={e => setTokenA(e.target.value)}>
             {tokens.filter(token => token !== tokenB).map(token => <option key={token} value={token}>{token}</option>)}
           </select>
-          <label>Token A</label>
+          <label className="form-label">Token A</label>
         </div>
       </div>
 
       <div className="Pair-token">
         <div>
-          <label>Amount B</label>
-          <input type="text" value={amountB} onChange={e => setAmountB(e.target.value)}></input>
+          <label className="form-label">Amount B</label>
+          <input className="form-input" type="text" value={amountB} onChange={e => setAmountB(e.target.value)}></input>
         </div>
 
         <div>
-          <select name="tokens" id="tokens" defaultValue={tokenB} onChange={e => setTokenB(e.target.value)}>
+          <select className="form-input" name="tokens" id="tokens" defaultValue={tokenB} onChange={e => setTokenB(e.target.value)}>
             {tokens.filter(token => token !== tokenA).map(token => <option key={token} value={token}>{token}</option>)}
           </select>
-          <label>Token B</label>
+          <label className="form-label">Token B</label>
         </div>
       </div>
 
@@ -72,8 +72,8 @@ function Pair(props: PairProps) {
       </div>
 
       <div className="Pair-slip">
-        <label>Slippage Tolerance</label>
-        <input type="text" value={slippage} onChange={e => setSlippage(+e.target.value)}></input>
+        <label className="form-label">Slippage Tolerance</label>
+        <input className="form-input" type="text" value={slippage} onChange={e => setSlippage(+e.target.value)}></input>
         <span>%</span>
       </div>
     </div>

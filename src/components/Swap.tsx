@@ -61,12 +61,12 @@ function Swap() {
 
       <div className="App-buttons">
         <div>
-          <button type="button" onClick={amountOut}>Get output amount</button>
-          <button type="button" onClick={swapExact}>Swap exact tokens for tokens</button>
+          <button type="button" className="btn-default" onClick={amountOut}>Get output amount</button>
+          <button type="button" className="btn-default" onClick={swapExact}>Swap exact tokens for tokens</button>
         </div>
         <div>
-          <button type="button" onClick={amountIn}>Get input amount</button>
-          <button type="button" onClick={swapForExact}>Swap tokens for exact tokens</button>
+          <button type="button" className="btn-default" onClick={amountIn}>Get input amount</button>
+          <button type="button" className="btn-default" onClick={swapForExact}>Swap tokens for exact tokens</button>
         </div>
       </div>
     </div>

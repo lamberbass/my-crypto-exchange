@@ -50,8 +50,8 @@ function Liquidity() {
 
       <div className="App-buttons">
         <div>
-          <button type="button" onClick={addLiq}>Add liquidity</button>
-          <button type="button" onClick={removeLiq}>Remove liquidity</button>
+          <button type="button" className="btn-default" onClick={addLiq}>Add liquidity</button>
+          <button type="button" className="btn-default" onClick={removeLiq}>Remove liquidity</button>
         </div>
       </div>
     </div>
