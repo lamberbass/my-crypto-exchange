@@ -49,6 +49,7 @@ _Add liquidity to a pool of tokens' pair. Remove a percentage of liquidity from 
 - **web3.js** for the web app to interact with the smart contract.
 - **Metamask** for in-browser user authentication.
 - **React.js** for the web application development.
+- **Tailwind css** for styling the web app.
 - **Mocha / Chai** for testing the smart contract.
 
 #### Instructions to build and run the app
