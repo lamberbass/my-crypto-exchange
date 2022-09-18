@@ -18,9 +18,21 @@ code {
 }
 
 .btn-default {
-  @apply text-white bg-blue-700 hover:bg-blue-800 focus:outline-none font-medium rounded-lg text-base px-5 py-2.5 text-center mr-2 mb-2
+  @apply text-white bg-blue-700 hover:bg-blue-800 focus:outline-none font-medium rounded-lg text-base px-5 py-2.5 text-center
 }
 
 .btn-default:disabled {
   @apply text-slate-400 bg-gray-800 cursor-not-allowed
+}
+
+.dark-container {
+  @apply mt-5 p-4 rounded-lg bg-dark-gray
+}
+
+.gray-container {
+  @apply bg-gray-800 text-gray-200 rounded-lg focus:outline-none
+}
+
+.form-select {
+  @apply bg-gray-700 text-gray-200 text-lg rounded-lg focus:outline-none p-2 w-24 h-10 cursor-pointer
 }

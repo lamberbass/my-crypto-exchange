@@ -15,6 +15,7 @@ import {
 export type AddLiquidityResponse = { amountA: string, amountB: string, liquidity: string };
 export type RemoveLiquidityResponse = { amountA: string, amountB: string };
 export type GetReservesResponse = { reserveA: string, reserveB: string };
+export type QuoteBeforeRemovingLiquidityResponse = { amountA: string, amountB: string, lpTokensToRemove: string };
 
 export async function addLiquidity(
   tokenA: string,
@@ -126,5 +127,29 @@ export async function getReserves(
   ).call({ from: currentAccount });
 
   console.log('getReserves response', response);
+  return response;
+}
+
+export async function quoteBeforeRemovingLiquidity(
+  tokenA: string,
+  tokenB: string,
+  percentageToRemove: string
+): Promise<QuoteBeforeRemovingLiquidityResponse> {
+  if (!libraryContract) {
+    await initLibraryContract();
+  }
+
+  const factoryAddress: string = await getContractAddress(FactoryCompiled);
+
+  console.log('quoteBeforeRemovingLiquidity request', { tokenA, tokenB, percentageToRemove });
+
+  const response: QuoteBeforeRemovingLiquidityResponse = await libraryContract.methods.quoteBeforeRemovingLiquidity(
+    factoryAddress,
+    tokenAddresses[tokenA],
+    tokenAddresses[tokenB],
+    percentageToRemove
+  ).call({ from: currentAccount });
+
+  console.log('quoteBeforeRemovingLiquidity response', response);
   return response;
 }

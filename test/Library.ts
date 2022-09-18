@@ -70,6 +70,20 @@ contract('Library', async (accounts: string[]) => {
     });
   });
 
+  describe('Quote before removing liquidity', async () => {
+    it('should return amounts and liquidity', async () => {
+      await token0.transfer(pair01Instance.address, eth(0.5));
+      await token1.transfer(pair01Instance.address, eth(727));
+
+      await pair01Instance.mint(accounts[0]);
+
+      const response = await libraryInstance.quoteBeforeRemovingLiquidity(factoryInstance.address, token0.address, token1.address, 50);
+      assert.equal(response[0].toString(), wei('249999999999999986').toString());
+      assert.equal(response[1].toString(), wei('363499999999999980934').toString());
+      assert.equal(response[2].toString(), wei('9532837982468808877').toString());
+    });
+  });
+
   describe('Get amount out', async () => {
     it('should return output amount with 0.3% fee applied', async () => {
       let amountOut: BN = await libraryInstance.getAmountOut(wei(1000), eth(1), eth(1.5));

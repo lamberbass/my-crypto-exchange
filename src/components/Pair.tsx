@@ -4,6 +4,7 @@ import Token from './Token';
 import Tokens from '../artifacts/deployed-tokens.json';
 import { ethString } from '../utils/amount-helper';
 import { useDebouncedEffect } from '../utils/debounce';
+import './Pair.css';
 
 export type PairProps = {
   tokenA: string,
@@ -51,7 +52,7 @@ function Pair(props: PairProps) {
       />
 
       <div
-        className="absolute top-20 left-2/4 bg-gray-800 rounded-lg p-0.5 border border-4 border-dark-gray cursor-pointer"
+        className="arrow-left absolute top-20 bg-gray-800 rounded-lg p-0.5 border border-4 border-dark-gray cursor-pointer"
         onClick={swapPair}>
         <img src="arrow.svg" alt="v" />
       </div>
@@ -73,7 +74,7 @@ function Pair(props: PairProps) {
       <div className="mt-2 flex items-center">
         <label>Slippage Tolerance</label>
         <input
-          className="mx-2 p-2 form-input w-12 h-6 text-md"
+          className="mx-2 p-2 gray-container w-12 h-6 text-md"
           type="text"
           value={props.slippage}
           onChange={e => props.setSlippage(e.target.value)}

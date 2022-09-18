@@ -35,6 +35,28 @@ library Library {
     return (amountIn * reserveOut) / reserveIn;
   }
 
+  function quoteBeforeRemovingLiquidity(
+    address factoryAddress,
+    address tokenA,
+    address tokenB,
+    uint8 percentageToRemove
+  ) public view returns (
+    uint256 amountA, 
+    uint256 amountB,
+    uint256 lpTokensToRemove
+  ) {
+    address pairAddress = pairFor(factoryAddress, tokenA, tokenB);
+    Pair pair = Pair(pairAddress);
+    
+    uint256 liquidity = pair.balanceOf(msg.sender);
+    lpTokensToRemove = percentageToRemove * liquidity / 100;
+
+    (uint256 reserveA, uint256 reserveB) = getReserves(factoryAddress, tokenA, tokenB);
+
+    amountA = (lpTokensToRemove * reserveA) / pair.totalSupply();
+    amountB = (lpTokensToRemove * reserveB) / pair.totalSupply();
+  }
+
   function getAmountOut(
     uint256 amountIn,
     uint256 reserveIn,

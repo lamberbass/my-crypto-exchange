@@ -15,7 +15,7 @@ function Swap() {
   const [swapExactMode, setSwapExactMode] = useState(true);
   const [inProgress, setInProgress] = useState(false);
 
-  const canSwap = () => (+amountA !== 0 || +amountB !== 0);
+  const canSwap = () => +amountA !== 0 || +amountB !== 0;
 
   const changedAmountA = (newAmountA: string) => {
     setSwapExactMode(true);
@@ -83,7 +83,7 @@ function Swap() {
   }
 
   return (
-    <div className="Swap-container mt-5 mx-auto p-4 rounded-lg bg-dark-gray">
+    <div className="Swap-container dark-container mx-auto">
       <h1 className="mb-4 text-2xl">Swap</h1>
 
       <Pair

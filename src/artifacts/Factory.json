@@ -2334,7 +2334,7 @@
         1214
       ],
       "Pair": [
-        2344
+        2425
       ]
     },
     "id": 1373,
@@ -2359,7 +2359,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 1373,
-        "sourceUnit": 2345,
+        "sourceUnit": 2426,
         "src": "58:20:6",
         "symbolAliases": [],
         "unitAlias": ""
@@ -2369,7 +2369,7 @@
         "baseContracts": [],
         "canonicalName": "Factory",
         "contractDependencies": [
-          2344
+          2425
         ],
         "contractKind": "contract",
         "fullyImplemented": true,
@@ -3328,7 +3328,7 @@
                       "stateVariable": false,
                       "storageLocation": "default",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_Pair_$2344",
+                        "typeIdentifier": "t_contract$_Pair_$2425",
                         "typeString": "contract Pair"
                       },
                       "typeName": {
@@ -3338,13 +3338,13 @@
                           "id": 1326,
                           "name": "Pair",
                           "nodeType": "IdentifierPath",
-                          "referencedDeclaration": 2344,
+                          "referencedDeclaration": 2425,
                           "src": "707:4:6"
                         },
-                        "referencedDeclaration": 2344,
+                        "referencedDeclaration": 2425,
                         "src": "707:4:6",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_Pair_$2344",
+                          "typeIdentifier": "t_contract$_Pair_$2425",
                           "typeString": "contract Pair"
                         }
                       },
@@ -3364,7 +3364,7 @@
                       "nodeType": "NewExpression",
                       "src": "719:8:6",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_creation_nonpayable$__$returns$_t_contract$_Pair_$2344_$",
+                        "typeIdentifier": "t_function_creation_nonpayable$__$returns$_t_contract$_Pair_$2425_$",
                         "typeString": "function () returns (contract Pair)"
                       },
                       "typeName": {
@@ -3374,13 +3374,13 @@
                           "id": 1329,
                           "name": "Pair",
                           "nodeType": "IdentifierPath",
-                          "referencedDeclaration": 2344,
+                          "referencedDeclaration": 2425,
                           "src": "723:4:6"
                         },
-                        "referencedDeclaration": 2344,
+                        "referencedDeclaration": 2425,
                         "src": "723:4:6",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_Pair_$2344",
+                          "typeIdentifier": "t_contract$_Pair_$2425",
                           "typeString": "contract Pair"
                         }
                       }
@@ -3396,7 +3396,7 @@
                     "src": "719:10:6",
                     "tryCall": false,
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_Pair_$2344",
+                      "typeIdentifier": "t_contract$_Pair_$2425",
                       "typeString": "contract Pair"
                     }
                   },
@@ -3450,7 +3450,7 @@
                         "referencedDeclaration": 1328,
                         "src": "735:4:6",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_Pair_$2344",
+                          "typeIdentifier": "t_contract$_Pair_$2425",
                           "typeString": "contract Pair"
                         }
                       },
@@ -3461,7 +3461,7 @@
                       "lValueRequested": false,
                       "memberName": "initialize",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 1922,
+                      "referencedDeclaration": 2003,
                       "src": "735:15:6",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_address_$returns$__$",
@@ -3518,7 +3518,7 @@
                           "referencedDeclaration": 1328,
                           "src": "795:4:6",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_Pair_$2344",
+                            "typeIdentifier": "t_contract$_Pair_$2425",
                             "typeString": "contract Pair"
                           }
                         }
@@ -3526,7 +3526,7 @@
                       "expression": {
                         "argumentTypes": [
                           {
-                            "typeIdentifier": "t_contract$_Pair_$2344",
+                            "typeIdentifier": "t_contract$_Pair_$2425",
                             "typeString": "contract Pair"
                           }
                         ],
@@ -3975,12 +3975,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0x5c27aEbE5d092ef31bde19a19E5E912e261Af8a0",
-      "transactionHash": "0x85cbccdb4979906043e2ccf8975df29e048e291edb2029585fd8823c707c6627"
+      "address": "0xE799c481668E9d88dCc90B85B56e1f16a0634f49",
+      "transactionHash": "0xbd5f43bcad3d6b4661fe8b5f1cd7f83bf208e20e9e31de632f1e07695129d188"
     }
   },
   "schemaVersion": "3.4.8",
-  "updatedAt": "2022-09-04T19:31:31.291Z",
+  "updatedAt": "2022-09-18T16:25:47.989Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",

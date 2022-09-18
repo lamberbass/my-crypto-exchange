@@ -40,7 +40,7 @@ export async function mintTokensWithZeroBalance(): Promise<void> {
   const amountToMint: BN = eth(1000);
 
   const addressesToMint: string[] = Object.keys(tokenAddresses)
-    .filter((token: string) => eth(balances[token]).isZero())
+    .filter((token: string) => !eth(balances[token]).isZero())
     .map((token: string) => tokenAddresses[token]);
 
   if (addressesToMint.length === 0) {

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { getTokenBalance } from '../services/tokens.service';
 import { ethString } from '../utils/amount-helper';
 import { useDebouncedEffect } from '../utils/debounce';
-import './Token.css';
 
 export type TokenProps = {
   tokens: string[],
@@ -23,15 +22,15 @@ function Token(props: TokenProps) {
   useDebouncedEffect(getBalance, [props.token], 500);
 
   return (
-    <div className="form-container flex flex-col">
+    <div className="gray-container p-3 flex flex-col">
       <div className="flex items-center justify-between">
-        <input className="form-input text-3xl h-10 w-9/12" type="text" value={props.amount} onChange={e => props.setAmount(e.target.value)}></input>
+        <input className="gray-container text-3xl h-10 w-9/12" type="text" value={props.amount} onChange={e => props.setAmount(e.target.value)}></input>
 
         <select className="form-select ml-4" name="tokens" id="tokens" value={props.token} onChange={e => props.setToken(e.target.value)}>
           {props.tokens.map(token => <option key={token} value={token}>{token}</option>)}
         </select>
       </div>
-      <div className="my-1">Balance: {balance}</div>
+      <div className="my-1 text-gray-400 text-sm">Balance: {balance}</div>
     </div>
   );
 }
