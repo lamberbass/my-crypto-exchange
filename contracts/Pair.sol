@@ -3,6 +3,8 @@ pragma solidity ^0.8.15;
 
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract Pair is ERC20 {
   uint256 constant MINIMUM_LIQUIDITY = 1000;
@@ -67,8 +69,8 @@ contract Pair is ERC20 {
 
     _burn(to, lpTokens);
 
-    ERC20(token0).transfer(to, amount0);
-    ERC20(token1).transfer(to, amount1);
+    SafeERC20.safeTransfer(IERC20(token0), to, amount0);
+    SafeERC20.safeTransfer(IERC20(token1), to, amount1);
 
     uint256 balance0 = ERC20(token0).balanceOf(address(this));
     uint256 balance1 = ERC20(token1).balanceOf(address(this));
@@ -89,11 +91,11 @@ contract Pair is ERC20 {
     }
 
     if (amount0Out > 0) {
-      ERC20(token0).transfer(to, amount0Out);
+      SafeERC20.safeTransfer(IERC20(token0), to, amount0Out);
     }
 
     if (amount1Out > 0) {
-      ERC20(token1).transfer(to, amount1Out);
+      SafeERC20.safeTransfer(IERC20(token1), to, amount1Out);
     }
 
     uint256 balance0 = ERC20(token0).balanceOf(address(this));

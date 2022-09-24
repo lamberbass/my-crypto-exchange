@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./Factory.sol";
 import "./Pair.sol";
 import "./Library.sol";
@@ -41,8 +42,8 @@ contract Router {
       amountBMin
     );
         
-    ERC20(tokenA).transferFrom(msg.sender, pairAddress, amountA);
-    ERC20(tokenB).transferFrom(msg.sender, pairAddress, amountB);
+    SafeERC20.safeTransferFrom(IERC20(tokenA), msg.sender, pairAddress, amountA);    
+    SafeERC20.safeTransferFrom(IERC20(tokenB), msg.sender, pairAddress, amountB);
     liquidity = Pair(pairAddress).mint(to);
   }
 
@@ -86,7 +87,8 @@ contract Router {
       revert('Insufficient output amount');
     }
             
-    ERC20(path[0]).transferFrom(
+    SafeERC20.safeTransferFrom(
+      IERC20(path[0]),
       msg.sender,
       Library.pairFor(address(factory), path[0], path[1]),
       amounts[0]
@@ -111,12 +113,13 @@ contract Router {
       revert('Excessive input amount');
     }
             
-    ERC20(path[0]).transferFrom(
+    SafeERC20.safeTransferFrom(
+      IERC20(path[0]),
       msg.sender,
       Library.pairFor(address(factory), path[0], path[1]),
       amounts[0]
     );
-        
+               
     swap(amounts, path, to);
   }
 
