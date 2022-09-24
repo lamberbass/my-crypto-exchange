@@ -91,7 +91,7 @@ library Library {
     uint256[] memory amountsOut = new uint256[](path.length);
     amountsOut[0] = amountIn;
 
-    for (uint256 i; i < path.length - 1; i++) {
+    for (uint256 i = 0; i < path.length - 1; i++) {
       (uint256 reserve0, uint256 reserve1) = getReserves(
         factory,
         path[i],

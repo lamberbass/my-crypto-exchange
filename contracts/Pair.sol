@@ -60,23 +60,24 @@ contract Pair is ERC20 {
   }
 
   function burn(address to, uint256 lpTokens) public returns (uint256 amount0, uint256 amount1) {
-    amount0 = (lpTokens * reserve0) / totalSupply();
-    amount1 = (lpTokens * reserve1) / totalSupply();
+    uint256 balance0 = ERC20(token0).balanceOf(address(this));
+    uint256 balance1 = ERC20(token1).balanceOf(address(this));
+
+    amount0 = (lpTokens * balance0) / totalSupply();
+    amount1 = (lpTokens * balance1) / totalSupply();
 
     require(amount0 > 0 && amount1 > 0, 'Insufficient liquidity tokens burned!');
 
     _burn(to, lpTokens);
 
-    SafeERC20.safeTransfer(IERC20(token0), to, amount0);
-    SafeERC20.safeTransfer(IERC20(token1), to, amount1);
-
-    uint256 balance0 = ERC20(token0).balanceOf(address(this));
-    uint256 balance1 = ERC20(token1).balanceOf(address(this));
-
-    reserve0 = balance0;
-    reserve1 = balance1;
+    // expected reserves after transfers
+    reserve0 = balance0 - amount0;
+    reserve1 = balance1 - amount1;
 
     emit Burn(msg.sender, amount0, amount1, lpTokens, to);
+
+    SafeERC20.safeTransfer(IERC20(token0), to, amount0);
+    SafeERC20.safeTransfer(IERC20(token1), to, amount1);
   }
 
   function swap(uint256 amount0Out, uint256 amount1Out, address to) public {
@@ -88,27 +89,12 @@ contract Pair is ERC20 {
       revert('Output amount is greater than reserve');
     }
 
-    if (amount0Out > 0) {
-      SafeERC20.safeTransfer(IERC20(token0), to, amount0Out);
-    }
-
-    if (amount1Out > 0) {
-      SafeERC20.safeTransfer(IERC20(token1), to, amount1Out);
-    }
-
-    uint256 balance0 = ERC20(token0).balanceOf(address(this));
-    uint256 balance1 = ERC20(token1).balanceOf(address(this));
+    // expected balances after transfers
+    uint256 balance0 = ERC20(token0).balanceOf(address(this)) - amount0Out;
+    uint256 balance1 = ERC20(token1).balanceOf(address(this)) - amount1Out;
 
     uint256 amount0In = balance0 - (reserve0 - amount0Out);
     uint256 amount1In = balance1 - (reserve1 - amount1Out);
-
-    if (amount0In < 0) {
-      amount0In = 0;
-    }
-
-    if (amount1In < 0) {
-      amount1In = 0;
-    }
 
     require(amount0In > 0 || amount1In > 0, 'Zero input amounts');
 
@@ -124,5 +110,13 @@ contract Pair is ERC20 {
     reserve1 = balance1;
 
     emit Swap(msg.sender, amount0Out, amount1Out, to);
+    
+    if (amount0Out > 0) {
+      SafeERC20.safeTransfer(IERC20(token0), to, amount0Out);
+    }
+
+    if (amount1Out > 0) {
+      SafeERC20.safeTransfer(IERC20(token1), to, amount1Out);
+    }
   }
 }

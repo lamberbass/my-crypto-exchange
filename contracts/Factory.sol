@@ -22,12 +22,13 @@ contract Factory {
     }
 
     Pair pair = new Pair();
-    pair.initialize(token0, token1);
 
     pairAddress = address(pair);
     pairs[token0][token1] = pairAddress;
     pairs[token1][token0] = pairAddress;
 
     emit PairCreated(token0, token1, pairAddress);
+
+    pair.initialize(token0, token1);
   }
 }

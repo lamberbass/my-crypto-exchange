@@ -165,7 +165,7 @@ contract Router {
     address[] memory path,
     address to
   ) internal {
-    for (uint256 i; i < path.length - 1; i++) {
+    for (uint256 i = 0; i < path.length - 1; i++) {
       (address input, address output) = (path[i], path[i + 1]);
       Pair pair = Pair(Library.pairFor(address(factory), input, output));
       
