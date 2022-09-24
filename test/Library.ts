@@ -72,15 +72,18 @@ contract('Library', async (accounts: string[]) => {
 
   describe('Quote before removing liquidity', async () => {
     it('should return amounts and liquidity', async () => {
-      await token0.transfer(pair01Instance.address, eth(0.5));
-      await token1.transfer(pair01Instance.address, eth(727));
+      await token0.transfer(pair01Instance.address, eth(1));
+      await token1.transfer(pair01Instance.address, eth(1));
 
       await pair01Instance.mint(accounts[0]);
 
+      const liquidity: BN = await pair01Instance.balanceOf(accounts[0].toString());
+      assert.equal(liquidity.toString(), eth(1).sub(wei(1000)).toString());
+
       const response = await libraryInstance.quoteBeforeRemovingLiquidity(factoryInstance.address, token0.address, token1.address, 50);
-      assert.equal(response[0].toString(), wei('249999999999999986').toString());
-      assert.equal(response[1].toString(), wei('363499999999999980934').toString());
-      assert.equal(response[2].toString(), wei('9532837982468808877').toString());
+      assert.equal(response[0].toString(), eth(0.5).sub(wei(500)).toString());
+      assert.equal(response[1].toString(), eth(0.5).sub(wei(500)).toString());
+      assert.equal(response[2].toString(), eth(0.5).sub(wei(500)).toString());
     });
   });
 

@@ -1,5 +1,8 @@
 require("ts-node").register({
-  files: true
+  files: true,
+  compilerOptions: {
+    module: "CommonJS"
+  }
 });
 /**
  * Use this file to configure your truffle project. It's seeded with some
