@@ -49,12 +49,13 @@ library Library {
     Pair pair = Pair(pairAddress);
     
     uint256 liquidity = pair.balanceOf(msg.sender);
-    lpTokensToRemove = percentageToRemove * liquidity / 100;
 
     (uint256 reserveA, uint256 reserveB) = getReserves(factoryAddress, tokenA, tokenB);
 
-    amountA = (lpTokensToRemove * reserveA) / pair.totalSupply();
-    amountB = (lpTokensToRemove * reserveB) / pair.totalSupply();
+    amountA = (percentageToRemove * liquidity * reserveA) / (pair.totalSupply() * 100);
+    amountB = (percentageToRemove * liquidity * reserveB) / (pair.totalSupply() * 100);
+
+    lpTokensToRemove = percentageToRemove * liquidity / 100;
   }
 
   function getAmountOut(

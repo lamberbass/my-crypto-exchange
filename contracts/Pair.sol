@@ -37,14 +37,14 @@ contract Pair is ERC20 {
     uint256 amount0 = balance0 - reserve0;
     uint256 amount1 = balance1 - reserve1;
 
-    if (totalSupply() == 0) {
-      lpTokens = Math.sqrt(amount0 * amount1) - MINIMUM_LIQUIDITY;
-      _mint(address(this), MINIMUM_LIQUIDITY);
-    } else {
+    if (totalSupply() > 0) {
       lpTokens = Math.min(
         (amount0 * totalSupply()) / reserve0, 
         (amount1 * totalSupply()) / reserve1
       );
+    } else {
+      lpTokens = Math.sqrt(amount0 * amount1) - MINIMUM_LIQUIDITY;
+      _mint(address(this), MINIMUM_LIQUIDITY);
     }
 
     if (lpTokens <= 0) {
@@ -63,9 +63,7 @@ contract Pair is ERC20 {
     amount0 = (lpTokens * reserve0) / totalSupply();
     amount1 = (lpTokens * reserve1) / totalSupply();
 
-    if (amount0 == 0 || amount1 == 0) {
-      revert('Insufficient liquidity tokens burned!');
-    }
+    require(amount0 > 0 && amount1 > 0, 'Insufficient liquidity tokens burned!');
 
     _burn(to, lpTokens);
 
@@ -112,9 +110,7 @@ contract Pair is ERC20 {
       amount1In = 0;
     }
 
-    if (amount0In == 0 && amount1In == 0) {
-      revert('Zero input amounts');
-    }
+    require(amount0In > 0 || amount1In > 0, 'Zero input amounts');
 
     // apply 0.3% fee
     uint256 balance0AfterFee = (balance0 * 1000) - (amount0In * 3);
