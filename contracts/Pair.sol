@@ -21,16 +21,18 @@ contract Pair is ERC20 {
 
   constructor() ERC20("Liquidity Provider Token", "LPT") {}
 
-  function initialize(address _token0, address _token1) public {
+  function initialize(address tokenA, address tokenB) external {
+    require(tokenA != address(0) && tokenB != address(0), "Token addresses cannot be the zero address.");
+
     if (token0 != address(0) || token1 != address(0)) {
       revert("Pair already initialized");
     }
 
-    token0 = _token0;
-    token1 = _token1;
+    token0 = tokenA;
+    token1 = tokenB;
   }
   
-  function mint(address to) public returns (uint256 lpTokens) {
+  function mint(address to) external returns (uint256 lpTokens) {
     uint256 balance0 = ERC20(token0).balanceOf(address(this));
     uint256 balance1 = ERC20(token1).balanceOf(address(this));
     
@@ -59,7 +61,7 @@ contract Pair is ERC20 {
     emit Mint(msg.sender, amount0, amount1, lpTokens, to);
   }
 
-  function burn(address to, uint256 lpTokens) public returns (uint256 amount0, uint256 amount1) {
+  function burn(address to, uint256 lpTokens) external returns (uint256 amount0, uint256 amount1) {
     uint256 balance0 = ERC20(token0).balanceOf(address(this));
     uint256 balance1 = ERC20(token1).balanceOf(address(this));
 
@@ -80,7 +82,7 @@ contract Pair is ERC20 {
     SafeERC20.safeTransfer(IERC20(token1), to, amount1);
   }
 
-  function swap(uint256 amount0Out, uint256 amount1Out, address to) public {
+  function swap(uint256 amount0Out, uint256 amount1Out, address to) external {
     if (amount0Out == 0 && amount1Out == 0) {
       revert('Zero output amounts');
     }

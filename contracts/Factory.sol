@@ -8,7 +8,7 @@ contract Factory {
   
   mapping(address => mapping(address => address)) public pairs;
 
-  function createPair(address token0, address token1) public returns (address pairAddress) {
+  function createPair(address token0, address token1) external returns (address pairAddress) {
     if (token0 == token1) {
       revert('Tokens should have different addresses');
     }

@@ -23,7 +23,7 @@ library Library {
     uint256 amountIn,
     uint256 reserveIn,
     uint256 reserveOut
-  ) public pure returns (uint256 amountOut) {
+  ) external pure returns (uint256 amountOut) {
     if (amountIn == 0) {
       revert('Insufficient amount');
     }
@@ -40,7 +40,7 @@ library Library {
     address tokenA,
     address tokenB,
     uint8 percentageToRemove
-  ) public view returns (
+  ) external view returns (
     uint256 amountA, 
     uint256 amountB,
     uint256 lpTokensToRemove
@@ -83,7 +83,7 @@ library Library {
     address factory,
     uint256 amountIn,
     address[] memory path
-  ) public view returns (uint256[] memory) {
+  ) external view returns (uint256[] memory) {
     if (path.length < 2) {
       revert('Invalid path');
     }
@@ -129,7 +129,7 @@ library Library {
     address factory,
     uint256 amountOut,
     address[] memory path
-  ) public view returns (uint256[] memory) {
+  ) external view returns (uint256[] memory) {
     if (path.length < 2) {
       revert('Invalid path');
     }

@@ -22,7 +22,7 @@ contract Router {
     uint256 amountAMin,
     uint256 amountBMin,
     address to
-  ) public returns (
+  ) external returns (
     uint256 amountA,
     uint256 amountB,
     uint256 liquidity
@@ -54,7 +54,7 @@ contract Router {
     uint256 amountAMin,
     uint256 amountBMin,
     address to
-  ) public returns (
+  ) external returns (
     uint256 amountA,
     uint256 amountB
   ) {
@@ -76,7 +76,7 @@ contract Router {
     uint256 amountOutMin,
     address[] calldata path,
     address to
-  ) public returns (uint256[] memory amounts) {
+  ) external returns (uint256[] memory amounts) {
     amounts = Library.getAmountsOut(
       address(factory),
       amountIn,
@@ -102,7 +102,7 @@ contract Router {
     uint256 amountInMax,
     address[] calldata path,
     address to
-  ) public returns (uint256[] memory amounts) {
+  ) external returns (uint256[] memory amounts) {
     amounts = Library.getAmountsIn(
       address(factory),
       amountOut,
